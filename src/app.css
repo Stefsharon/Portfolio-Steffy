@@ -1,0 +1,376 @@
+
+/* Variables CSS para los temas */
+:root {
+    /* Modo Claro (valores por defecto) */
+    --background-color: #f8f8f8;
+    --text-primary: white;
+    --text-color: #333;
+    --header-bg: rgba(255, 255, 255, 0.9);
+    --header-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --card-bg: #fff;
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --accent-color: #EE0001;
+    --secondary-accent-color: #FF7B00;
+    --hero-title-color: #222;
+    --hero-description-color: black;
+    --footer-bg: #333;
+    --footer-text-color: #fff;
+    --light-bg-primary: #f3f4f9; /* Fondo principal (lavanda muy suave) */
+    --light-bg-card: #ffffff; /* Fondo de las tarjetas */
+    --light-text-primary: #2d2d2d; /* Texto principal oscuro */
+    --light-text-secondary: #000000; /* Para el .study-scope que es 'black' */
+    --light-accent-purple: #6C63FF; /* Violeta principal */
+    --light-dark-purple: #0524bc; /* Violeta oscuro para animación */
+    --light-shadow-card: rgba(108, 99, 255, 0.08); /* Sombra suave */
+    --light-shadow-card-hover: rgba(108, 99, 255, 0.15); /* Sombra hover */
+    --light-bullet-glow: #B8C1EC; /* Sombra de la viñeta */
+    --clr-bg-section-light: #f3f4f9; /* Fondo de sección (lavanda suave) */
+    --clr-bg-card-light: #ffffff; /* Fondo de tarjetas/formularios */
+    --clr-text-dark: #2d2d2d; /* Texto principal oscuro */
+    --clr-text-medium: #555; /* Texto medio (para descripciones, social links default) */
+    --clr-text-light: #f0f0f0; /* Texto muy claro (para botones, etc.) */
+    --clr-accent-blue: #6C63FF; /* Azul/violeta principal (botones, iconos, borders) */
+    --clr-accent-red: #EE0001; /* Rojo de acento (para hover en social links, botones) */
+    --clr-shadow-light: rgba(108, 99, 255, 0.08); /* Sombra suave para tarjetas */
+    --clr-border-light: #eee; /* Borde claro (para inputs, divisores) */
+    --clr-input-bg-light: #fefefe; /* Un poco más claro que el fondo de la sección para inputs */
+    --clr-border-focus: rgba(108, 99, 255, 0.2); /* Sombra al enfocar input */
+      /* NUEVA VARIABLE para el glow de iconos en modo CLARO */
+      --clr-social-glow-light: rgba(108, 99, 255, 0.4); /* Un tono más suave de tu violeta principal */
+  }
+  
+  body.dark-mode {
+    /* Modo Oscuro */
+    --background-color: #1a1a2e; /* Fondo oscuro original (lo mantendremos como base) */
+    --text-color: #ffffff; /* Texto blanco */
+    --header-bg: rgba(26, 26, 46, 0.9); /* Header oscuro semitransparente */
+    --header-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    --card-bg: #2a2a4a; /* Tarjetas oscuras */
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --accent-color: #ff5722; /* Un naranja rojizo para acentos en modo oscuro */
+    --secondary-accent-color: #7af98d; /* Otro naranja para el gradiente */
+    --hero-title-color: #f0f0f0; /* Título claro */
+    --hero-description-color: #cccccc; /* Descripción más clara */
+    --main-footer:#0d0d0d;
+    --footer-text-color: #bbb;
+    --button-active-color: #ff007f; /* Un rosa brillante */
+    --accent-red: #FF4D4D;
+    --heart-color: red;
+    --button-active-dark-blue: #007bff; /* Un azul común, puedes elegir tu propio tono */
+    --clr-accent-blue: #8F82FF; /* Ya tienes este, podrías usarlo *
+
+
+     --footer-bg-dark: #202c4b; /* Un azul oscuro para el fondo del footer en dark mode */
+     --footer-text-dark: #FFFFFF; /* Texto blanco para el footer en dark mode */
+     /* SUGERENCIA: Define una nueva variable para el hover del botón en modo oscuro si quieres un azul/púrpura */
+     --button-hover-dark-mode: #8F82FF; /* Tu --clr-accent-blue de antes, o un púrpura/azul más oscuro que combine */
+
+     --color-project-link: white; /* En modo oscuro, el link es blanco */
+
+
+    --dark-mode-background: #1e293b; /* Nuevo color azul galáctico para el fondo */
+    --light-bg-primary: #1a1a2e; /* Un azul oscuro o gris muy oscuro */
+    --light-bg-card: #27283d; /* Un tono más claro del fondo oscuro para las tarjetas */
+    --light-text-primary: #f0f0f0; /* Texto claro */
+    --light-text-secondary: #cccccc; /* Texto un poco más gris para .study-scope */
+    --light-accent-purple: #8f82ff; /* Un violeta más brillante/saturado para el modo oscuro */
+    --light-dark-purple: #4c3aff; /* Un violeta oscuro adaptado al tema oscuro */
+    --light-shadow-card: rgba(0, 0, 0, 0.3); /* Sombra más pronunciada en oscuro */
+    --light-shadow-card-hover: rgba(0, 0, 0, 0.5);
+    --light-bullet-glow: #6f5edb; /* Sombra de la viñeta adaptada */
+    --clr-bg-section-light: #1A1A2E; /* Fondo oscuro principal */
+    --clr-bg-card-light: #2C3542; /* Fondo oscuro de tarjetas (un poco más claro que el fondo) */
+    --clr-text-dark: #F0F0F0; /* Texto claro */
+    --clr-text-medium: #CCCCCC; /* Texto gris claro */
+    --clr-text-light: #1A1A2E; /* Para elementos que eran claros y se vuelven oscuros */
+    --clr-accent-blue: #8F82FF; /* Azul/violeta más vibrante en oscuro */
+    --clr-accent-red: #FF4D4D; /* Rojo más vibrante en oscuro */
+    --clr-shadow-light: rgba(0, 0, 0, 0.5); /* Sombra más oscura y pronunciada */
+    --clr-border-light: #444; /* Borde más oscuro */
+    --clr-input-bg-light:white; /* Fondo de inputs más oscuro */
+    --clr-border-focus: rgba(143, 130, 255, 0.3);
+  }
+  
+  body.dark-mode .main-footer {
+    background-color: #0d0d0d;
+    color: #f1f1f1;
+  }
+  
+
+  /* aplica las variables a los elementos */
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+  
+  .main-header {
+    background-color: var(--header-bg);
+    box-shadow: var(--header-shadow);
+  }
+  
+  .header-logo {
+    color: var(--accent-color);
+  }
+  
+  .header-logo:hover {
+    color: var(--secondary-accent-color);
+  }
+  
+  .main-nav li a {
+    color: var(--text-color);
+  }
+  
+  .main-nav li a:hover {
+    color: var(--accent-color);
+  }
+  
+  .main-nav li a::after {
+    background-color: var(--accent-color);
+  }
+  
+  .hero-section {
+    background: var(--background-color); /* Usamos la variable general para el fondo */
+  }
+  
+  .hero-content {
+    background-color: var(--card-bg);
+    box-shadow: var(--card-shadow);
+  }
+  
+  .hero-title {
+    color: var(--hero-title-color);
+  }
+  
+  .hero-title::after {
+    background: linear-gradient(90deg, transparent, var(--accent-color), var(--secondary-accent-color), transparent);
+  }
+  
+  .hero-subtitle {
+    color: var(--accent-color);
+  }
+  
+  .hero-description {
+    color: var(--hero-description-color);
+  }
+ 
+  body.dark-mode .code-project-card h3 {
+    color: #f0f0f0; /* Blanco claro */
+  }
+
+  /* Hover para el título del proyecto de código */
+body.dark-mode .code-project-card h3:hover {
+    color: var(--secondary-accent-color); /* Naranja al hacer hover en el título */
+    cursor: pointer;
+  }
+  .about-me-section,
+  .personal-gallery,
+  .bw-photo-gallery,
+  .skills-section,
+  .education-section,
+  .projects-section,
+  .code-projects-section,
+  .my-strengths-section,
+  .contact-section {
+    background-color: var(--background-color); /* Aplicar a las secciones principales */
+  }
+  
+  /* Títulos H2 */
+  h2 {
+    color: var(--text-color);
+  }
+  
+  h2::after {
+    background-color: var(--accent-color);
+  }
+  
+  /* Tarjetas de habilidades, proyectos, etc. */
+  .skill-card, .project-card, .code-project-card, .timeline-card-new, .contact-form-container, .contact-info-container, .strength-category {
+    background-color: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    color: var(--text-color); /* Asegura que el texto dentro de las tarjetas sea visible */
+  }
+  
+  .skill-card h3, .project-card h3, .code-project-card h3, .timeline-card-new h3, .contact-form-container h3, .contact-info-container h3, .strength-category h3 {
+    color: var(--text-color); /* Asegura que los títulos de las tarjetas sean visibles */
+  }
+  body.dark-mode .timeline-date-new {
+    color: var(--text-color); /* Texto blanco */
+  }
+  
+
+  .project-tab-button.active {
+  color: var(--button-active-color); /* Ahora usará el nuevo color */
+}
+
+.project-tab-button::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 3px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--button-active-color); /* La línea de abajo también usará el nuevo color */
+  transition: width 0.3s ease;
+}
+  .skill-icon, .modal-skill-icon {
+    color: var(--accent-color);
+  }
+  
+  .level-bar {
+    background: linear-gradient(to right, var(--secondary-accent-color), var(--accent-color));
+  }
+  
+  .skill-description, .skill-source, .skill-materia, .modal-description, .modal-source, .modal-materia, .instruction {
+    color: var(--text-color);
+  }
+  
+  .modal-level strong, .modal-source strong, .modal-materia strong {
+    color: var(--accent-color);
+  }
+  
+  .skill-modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7); /* Oscurecer un poco más el overlay en modo oscuro si es necesario */
+  }
+  
+  .close-button:hover {
+    color: var(--accent-color);
+  }
+  
+  .code-project-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--accent-color); /* Este ya es el naranja */
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  
+  /* Hover para "Ver Repositorio" */
+  .code-project-link:hover {
+    color: var(--secondary-accent-color); /* Naranja al hacer hover en "Ver Repositorio" */
+  }
+  
+  .code-project-link svg {
+    margin-right: 5px;
+    width: 18px;
+    height: 18px;
+    fill: var(--accent-color); /* Color por defecto del icono */
+    transition: fill 0.3s ease;
+  }
+  
+  /* Hover para el icono de "Ver Repositorio" */
+  .code-project-link:hover svg {
+    fill: var(--secondary-accent-color); /* Cambiar el color del icono al hacer hover */
+  }
+  /* Footer */
+  .main-footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text-color);
+  }
+  
+  .footer-links a {
+    color: var(--footer-text-color);
+  }
+  
+  .footer-links a:hover {
+    color: var(--accent-color);
+  }
+  
+  /* Botón de cambio de tema */
+  .theme-toggle-button {
+    background: none;
+    border: none;
+    font-size: 1.8em; /* Tamaño del icono */
+    cursor: pointer;
+    color: var(--text-color); /* Color del icono, se adaptará al tema */
+    transition: color 0.3s ease, transform 0.3s ease;
+    margin-left: 20px; /* Espacio para separarlo de la navegación */
+    outline: none; /* Quita el contorno al hacer clic */
+  }
+  
+  .theme-toggle-button:hover {
+    color: var(--accent-color); /* Resaltar al pasar el mouse */
+    transform: scale(1.1);
+  }
+  
+  /* Ajustes específicos para el modo oscuro en elementos de imagen/galería si necesitas */
+  .bw-photo-gallery h2 {
+      color: var(--text-color); /* El título de las fotos en B&N */
+  }
+  
+  .personal-gallery h2 {
+      color: var(--accent-color); /* El título de las fotos personales */
+  }
+  
+  p.gallery-subtitle {
+    color: var(--text-color);
+  }
+  
+  .image-gallery img {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada en oscuro */
+  }
+  
+  .grayscale-photo {
+    filter: grayscale(100%); /* Mantener el filtro de blanco y negro */
+  }
+  
+  /* Puedes ajustar más colores si es necesario, por ejemplo en los detalles de educación */
+  .language-skills h4 {
+    color: var(--text-color);
+  }
+  
+  .language-item span, .level-text {
+    color: var(--text-color);
+  }
+  
+  /* Color de fondo para los inputs y textareas en el formulario de contacto */
+  .contact-form input,
+  .contact-form textarea {
+    background-color: var(--card-bg); /* O un color ligeramente diferente si prefieres */
+    color: var(--text-color);
+    border: 1px solid var(--text-color); /* Borde que se adapte al tema */
+  }
+  
+  .contact-form input::placeholder,
+  .contact-form textarea::placeholder {
+    color: var(--text-color); /* Color del placeholder */
+    opacity: 0.7; /* Para que no sea tan fuerte */
+  }
+  
+  .submit-button {
+    background-color: var(--accent-color);
+    color: var(--footer-text-color); /* Blanco o casi blanco para que resalte */
+    transition: background-color 0.3s ease;
+  }
+  
+  .submit-button:hover {
+    background-color: var(--secondary-accent-color);
+  }
+  
+  .contact-info-container p {
+    color: var(--text-color);
+  }
+  
+  .contact-info-container a {
+    color: var(--accent-color);
+  }
+  
+  .contact-info-container a:hover {
+    color: var(--secondary-accent-color);
+  }
+  
+  .social-links a {
+    color: var(--text-color); /* Color de los iconos sociales */
+    transition: color 0.3s ease;
+  }
+  
+  .social-links a:hover {
+    color: var(--accent-color); /* Color al pasar el mouse */
+  }
+  
+  .steffy-tag {
+    color: var(--accent-color);
+  }
+  
