@@ -4,6 +4,220 @@
   import { tweened } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
 
+  let brushPaths = [];
+  let isDrawing = false;
+  let canvasRef;
+  let ctx;
+  let isTouchDevice = false;
+
+
+  function setupCanvas() {
+    if (!canvasRef) return;
+    ctx = canvasRef.getContext('2d');
+    canvasRef.width = canvasRef.clientWidth;
+    canvasRef.height = canvasRef.clientHeight;
+    ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(255,255,255,1)';
+    ctx.lineWidth = 100;
+    ctx.lineCap = 'round';
+  }
+
+  function startDrawing(event) {
+    isDrawing = true;
+    isTouchDevice = event.type.includes('touch');
+    draw(event);
+  }
+
+  function stopDrawing() {
+    isDrawing = false;
+    swipeProgress.set(1); // desbloquea toda la imagen (como si "pintaras" todo)
+  }
+
+  function draw(event) {
+    if (!isDrawing || !ctx) return;
+    const rect = canvasRef.getBoundingClientRect();
+    const x = isTouchDevice ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
+    const y = isTouchDevice ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 50, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function resetBrush() {
+    if (!canvasRef || !ctx) return;
+    ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+    swipeProgress.set(0); // volver al inicio
+  }
+
+  onMount(() => {
+    setupCanvas();
+    window.addEventListener('resize', setupCanvas);
+  });
+  let mouseX = 0;
+  let mouseY = 0;
+  let isMouseOver = false; // Variable para rastrear si el mouse está sobre el contenedor
+  let isLocked = false;    // Nueva variable: true = la imagen se queda como está (no reacciona al mouse)
+
+  const swipeProgress = tweened(0, {
+    duration: 300,
+    easing: cubicOut
+  });
+
+  // Rutas a tus dos imágenes (asegúrate de que estén en public/images/ o la ruta correcta)
+  const coderImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg';    // Tu foto para el estado "Coder" (será B&N)
+  const designerImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg'; // Tu foto para el estado "Designer" (será a Color)
+
+  let containerRef;
+
+  function handleMouseMove(event) {
+    if (containerRef && isMouseOver && !isLocked) { // Solo si el mouse está encima y no está bloqueado
+      const rect = containerRef.getBoundingClientRect();
+      mouseX = (event.clientX - rect.left) / rect.width;
+      mouseY = (event.clientY - rect.top) / rect.height;
+      $swipeProgress.set(mouseX); // Actualiza el progreso según la posición X del mouse
+    }
+  }
+
+  function handleMouseEnter() {
+    isMouseOver = true;
+    // Si el mouse entra y no está bloqueado, asegura que el progreso se actualice.
+    // Esto es importante si el usuario sale y vuelve a entrar sin desbloquear.
+    if (!isLocked) {
+      // Necesitamos una posición inicial para mouseX si el mouse ya está sobre el elemento
+      // pero el evento de mousemove aún no se ha disparado.
+      // Aquí podrías querer capturar el evento clientX/Y del mouseenter
+      // para inicializar mouseX, pero para este efecto, no es crítico.
+    }
+  }
+
+  function handleMouseLeave() {
+    isMouseOver = false;
+    if (!isLocked) { // Solo si no está bloqueado, vuelve al inicio (B&N)
+      $swipeProgress.set(0);
+    }
+  }
+
+  function handleMouseClick() {
+    isLocked = !isLocked; // Alternar el estado de bloqueo
+    if (!isLocked) { // Si se desbloquea, permite que regrese al estado B&N si el mouse no está encima
+      if (!isMouseOver) {
+        $swipeProgress.set(0); // Regresa al inicio si el mouse ya no está encima
+      }
+    }
+    // Si se bloquea (isLocked = true), el swipeProgress se mantiene en su último valor.
+  }
+
+  // --- Animaciones de las frases ---
+  // Coordenadas base (0-100 para porcentaje relativo dentro del contenedor de la imagen)
+  // Ajustadas para estar más centradas y visibles
+  let cplusplusTagBaseX = 25, cplusplusTagBaseY = 70; // Más arriba
+  let pythonTagBaseX = 60, pythonTagBaseY = 70;    // Python más a la izquierda y abajo
+  let assemblerTagBaseX = 50, assemblerTagBaseY = 20;   // Más a la derecha
+  let visualStudioTagBaseX = 25, visualStudioTagBaseY = 30; // Ajustado
+  let binTagBaseX = 25, binTagBaseY = 15;      // Ajustado
+  let itwhileTagBaseX = 40, itwhileTagBaseY=20;
+
+  let svelteTagBaseX = 60, svelteTagBaseY = 70;    // Ajustado
+  let jsTagBaseX = 13, jsTagBaseY = 34;       // Ajustado
+  let figmaTagBaseX = 75, figmaTagBaseY = 40;    // Ajustado para ser más visible
+  let canvaTagBaseX = 25, canvaTagBaseY = 70;    // Ajustado
+  let capcutTagBaseX = 65, capcutTagBaseY = 65;   // Ajustado
+  let htmlTagBaseX = 15, htmlTagBaseY = 45;     // Mantener
+  let cssTagBaseX = 60, cssTagBaseY = 20;      // Ajustado
+  let consoleLogTagBaseX = 40, consoleLogTagBaseY = 80;
+
+  // Declarar las variables _dynamic (¡esta es la corrección clave del error anterior!)
+  let cplusplusTagX_dynamic, cplusplusTagY_dynamic;
+  let pythonTagX_dynamic, pythonTagY_dynamic;
+  let assemblerTagX_dynamic, assemblerTagY_dynamic;
+  let visualStudioTagX_dynamic, visualStudioTagY_dynamic;
+  let binTagX_dynamic, binTagY_dynamic;
+  let itwhileTagX_dynamic, itwhileTagY_dynamic;
+
+  let svelteTagX_dynamic, svelteTagY_dynamic;
+  let jsTagX_dynamic, jsTagY_dynamic;
+  let figmaTagX_dynamic, figmaTagY_dynamic;
+  let canvaTagX_dynamic, canvaTagY_dynamic;
+  let capcutTagX_dynamic, capcutTagY_dynamic;
+  let htmlTagX_dynamic, htmlTagY_dynamic;
+  let cssTagX_dynamic, cssTagY_dynamic;
+  let consoleLogTagX_dynamic, consoleLogTagY_dynamic;
+
+
+  $: {
+    const movementFactorX = 20; // Movimiento horizontal en px
+    const movementFactorY = 15; // Movimiento vertical en px
+
+    // Movimiento para CODER tags (más visibles cuando $swipeProgress es bajo)
+    // Se aplican offsets dinámicos basados en mouseX/Y
+    cplusplusTagX_dynamic = cplusplusTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+    cplusplusTagY_dynamic = cplusplusTagBaseY + mouseY * movementFactorY * 1.5 - (movementFactorY * 1.5 / 2);
+
+    pythonTagX_dynamic = pythonTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
+    pythonTagY_dynamic = pythonTagBaseY + mouseY * movementFactorY * 1.1 - (movementFactorY * 1.1 / 2);
+
+    assemblerTagX_dynamic = assemblerTagBaseX + mouseX * movementFactorX * 0.5 - (movementFactorX * 0.5 / 2);
+    assemblerTagY_dynamic = assemblerTagBaseY + (1 - mouseY) * movementFactorY * 0.8 - (movementFactorY * 0.8 / 2);
+
+    visualStudioTagX_dynamic = visualStudioTagBaseX + (1 - mouseX) * movementFactorX * 0.9 - (movementFactorX * 0.9 / 2);
+    visualStudioTagY_dynamic = visualStudioTagBaseY + mouseY * movementFactorY * 0.6 - (movementFactorY * 0.6 / 2);
+
+    binTagX_dynamic = binTagBaseX + mouseX * movementFactorX * 0.6 - (movementFactorX * 0.6 / 2);
+    binTagY_dynamic = binTagBaseY + (1 - mouseY) * movementFactorY * 0.4 - (movementFactorY * 0.4 / 2);
+
+    
+    itwhileTagX_dynamic = itwhileTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+    itwhileTagY_dynamic= itwhileTagBaseY + (1 - mouseY) * movementFactorY * 0.4 - (movementFactorY * 0.4 / 2);
+
+    // Movimiento para DESIGNER tags (más visibles cuando $swipeProgress es alto)
+    svelteTagX_dynamic = svelteTagBaseX + (1 - mouseX) * movementFactorX * 0.9 - (movementFactorX * 0.9 / 2);
+    svelteTagY_dynamic = svelteTagBaseY + mouseY * movementFactorY * 0.5 - (movementFactorY * 0.5 / 2);
+
+    jsTagX_dynamic = jsTagBaseX + mouseX * movementFactorX * 1.2 - (movementFactorX * 1.2 / 2);
+    jsTagY_dynamic = jsTagBaseY + (1 - mouseY) * movementFactorY * 0.7 - (movementFactorY * 0.7 / 2);
+
+    figmaTagX_dynamic = figmaTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
+    figmaTagY_dynamic = figmaTagBaseY + (1 - mouseY) * movementFactorY * 0.9 - (movementFactorY * 0.9 / 2);
+
+    canvaTagX_dynamic = canvaTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
+    canvaTagY_dynamic = canvaTagBaseY + (1 - mouseY) * movementFactorY * 0.8 - (movementFactorY * 0.8 / 2);
+
+    capcutTagX_dynamic = capcutTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+    capcutTagY_dynamic = capcutTagBaseY + mouseY * movementFactorY * 1.0 - (movementFactorY * 1.0 / 2);
+
+    htmlTagX_dynamic = htmlTagBaseX + mouseX * movementFactorX - (movementFactorX / 2);
+    htmlTagY_dynamic = htmlTagBaseY + mouseY * movementFactorY - (movementFactorY / 2);
+
+    cssTagX_dynamic = cssTagBaseX + (1 - mouseX) * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+    cssTagY_dynamic = cssTagBaseY + mouseY * movementFactorY * 1.2 - (movementFactorY * 1.2 / 2);
+    consoleLogTagX_dynamic =  consoleLogTagBaseX + (1-mouseX) * movementFactorX * 0.9 - (movementFactorX* 0.10/2);
+    consoleLogTagY_dynamic = consoleLogTagBaseY + mouseY * movementFactorY * 1.4 - (movementFactorY * 4.2/2);
+  }
+
+    // Links de Redes Sociales con clases de Font Awesome
+    const socialLinks = [
+    { name: 'GitHub', url: 'https://github.com/Stefsharon', iconClass: 'fab fa-github' },
+    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/victoria-stefania-schenone-fern%C3%A1ndez-1ab05428b/', iconClass: 'fab fa-linkedin' },
+    { name: 'Instagram', url: 'https://www.instagram.com/stefanyred/', iconClass: 'fab fa-instagram' }
+  ];
+
+
+
+  // Variable de estado principal: true para modo "Designer" (color), false para "Coder" (B&N)
+  let isDesignerMode = false;
+
+    // --- Manejadores de Eventos para la varita ---
+    function handleWandEnter() {
+    isDesignerMode = true;
+  }
+
+  function handleWandLeave() {
+    isDesignerMode = false;
+  }
+
 
 // Datos de tus proyectos
 const projects = [
@@ -13,6 +227,7 @@ const projects = [
     description: "Análisis de datos y visualización interactiva de Composición con rojo, azul y amarillo de Piet Mondrian, explorando el impacto de ChatGPT en la industria creativa, proyectando su control futuro y cuestionando los límites entre la inspiración humana y la automatización digital, mediante magnitudes visuales. Este estudio abre un diálogo entre arte y tecnología, invitándonos a reflexionar sobre el rol de la creatividad en un mundo cada vez más automatizado.",
     technologies: ["HTML",'Svelte', 'JavaScript', 'CSS', 'D3.js', "Google Slides", 'Visualización de Datos', "Figma", "Flourish", "Vercel", "GitHub" ],
     link: 'https://proyecto-uno-vd.vercel.app/',
+    image: 'images/proyectos/Mondrian1.png',
     type: 'data-viz' // Un tipo para clasificar visualmente o filtrar si se desea
   },
   {
@@ -21,14 +236,16 @@ const projects = [
     description: 'Una página interactiva formada por reproductores musicales que vibran de acuerdo a los gustos musicales de Steffy y sus amigas, mostrando diferentes géneros según décadas. Cada reproductor tiene controles personalizados y animaciones que reaccionan al ritmo y estilo. Diseñamos símbolos únicos en Figma que representan a cada una del grupo, aportando identidad visual. Finalmente, un scrollytelling acompaña la experiencia, guiando al usuario a escuchar las canciones más reproducidas del 2025.',
     technologies: [ "HTML",'Svelte', 'JavaScript', 'CSS', 'D3.js', "Google Sheets", "Visualización de Datos", "Flourish", "Figma", "Vercel", "Microsoft Clip"],
     link: 'https://notas-musicales-compartidas.vercel.app/',
+    image: 'images/proyectos/ReproductoresMusicales2.png',
     type: 'data-viz'
   },
   {
     id: 3,
     title: 'Galaxia Estelar de Profesores',
     description: 'Visualización de datos con mis profesores preferidos de la universidad, donde cada estrella crece en tamaño según cuánto valoré su forma de enseñar y están ordenadas de mayor a menor puntaje para destacar a los mejores. Cada color representa el mood único del profesor, reflejando su estilo y energía al explicar. Al final de la página, los profesores están representados por muñecos diseñados por mí; al hacer click, se muestra información personal y una frase que los define. Un proyecto que une datos y diseño para destacar la esencia única de cada docente. ',
-    technologies: ["HTML",'Svelte', 'JavaScript', 'CSS', 'D3.js', "Vercel", 'Visualización de Datos', "Gemini"],
+    technologies: ["HTML",'Svelte', 'JavaScript', 'CSS', 'D3.js', "Vercel"],
     link: 'https://galaxia-estelar-visual.vercel.app/',
+    image: 'images/proyectos/GalaxiaEstelar3.png',
     type: 'data-viz'
   },
   {
@@ -37,6 +254,7 @@ const projects = [
     description: "Para el Esame di Stato, con tres amigas creamos Sharon Foods, una empresa ficticia dedicada a la comida típica italiana. El objetivo era representar los sabores tradicionales de Italia y adaptarlos a una propuesta muy moderna pensada para el público argentino. El sitio fue desarrollado en Wix Studio e incluye secciones como presentación de productos (Carbonara, Lasagna, Malfatti y Tiramisu) para poder adquirlos, galería visual, preguntas frecuentes, servicios, promociones y un chat de contacto. Todo con un diseño cálido, simple y fácil de navegar.",
         technologies: ['Wix Studio', 'Diseño Web', 'UI/UX'],
     link: 'https://sharonsfood4.wixsite.com/website',
+    image: 'images/proyectos/SharonFoods4.png',
     type: 'web-design'
   },
   {
@@ -45,13 +263,15 @@ const projects = [
     description: 'Diseño integral de UX en Figma para una aplicación que acompaña la gestión de la carrera profesional, incorporando una evaluación vocacional interactiva. Este proyecto final presenta pantallas pensadas para ofrecer una experiencia sencilla y personalizada, con múltiples funciones: desde el inicio y registro, hasta un test que detecta intereses mediante un análisis visual de resultados y sugiere carreras afines. Además, permite explorar universidades, acceder a comunidades por cada carrera para conectar con otros estudiantes, y chatear en tiempo real con expertos según el área de interés.',
     technologies: ['Figma', 'UI/UX Design', 'Prototyping'],
     link: 'https://www.figma.com/design/3DprlYUpmvOgbAWsKgkrNc/App-My-Career-Victoria-Stefania-Schenone-Fernandez?node-id=102-2903&t=0MZoZq3Nm6BYoK4G-1', 
+    image: 'images/proyectos/MyCareer5.png',
     type: 'ui-ux'
   },
   {id:6,
     title: 'Studify para estudiantes universitarios',
     description: 'Plataforma web creada en equipo para la materia Gestión de Proyectos Digitales, diseñada para potenciar el aprendizaje. Ofrece clases particulares con profesores especializados, comunidades organizadas por carrera y ejercicios desglosados paso a paso para facilitar la comprensión. Además, incorpora funciones inteligentes como un sistema de “match” entre estudiantes, técnica Pomodoro para optimizar el tiempo de estudio y recordatorios personalizados de exámenes. Este proyecto abarcó desde la planificación inicial hasta la creación de un prototipo funcional, reflejando un proceso completo de desarrollo.',
-    technologies: ["HTML", "React", "CSS", "Netlify"],
+    technologies: ["HTML", "React", "CSS", "Netlify", "Figma", "Google Drive"],
     link: 'https://studify-gestion.netlify.app/', 
+    image: 'images/proyectos/Studify6.png',
   }
   ];
 
@@ -102,6 +322,7 @@ const projects = [
   ];
 
 
+  
 
   // --- 1. Datos de Habilidades ---
   let skillsData = [
@@ -290,7 +511,7 @@ const projects = [
         {language: 'Español', level: ' Nivel Nativo' },
         {language: 'Italiano', level: ' Nivel Experto' },
         { language: 'Portugués', level: 'Nivel Avanzado' },
-        { language: 'Inglés', level: 'Nivel Básico' },
+        { language: 'Inglés', level: 'Nivel Intermedio' },
         { language: 'Latín', level: 'Nivel Básico'},     
       ]
     },
@@ -312,8 +533,8 @@ const projects = [
   'Nativo': 150,
   'Nivel Experto': 100,
   'Nivel Avanzado': 80,
-  'Nivel Intermedio': 60,
-  'Nivel Básico': 30
+  'Nivel Intermedio': 50,
+  'Nivel Básico': 20
 };
 
 function getLevelWidth(finalWidth) {
@@ -327,7 +548,7 @@ function getLevelWidth(finalWidth) {
 let españolWidth = getLevelWidth(levels['Nativo']);
 let italianoWidth = getLevelWidth(levels['Nivel Experto']);
 let portuguesWidth = getLevelWidth(levels['Nivel Avanzado']);
-let inglesWidth = getLevelWidth(levels['Nivel Básico']);
+let inglesWidth = getLevelWidth(levels['Nivel Intermedio']);
 let latinWidth = getLevelWidth(levels['Nivel Básico']);
 
 function getColorForLevel(level) {
@@ -345,7 +566,7 @@ onMount(() => {
   españolWidth.set(levels['Nativo']);
   italianoWidth.set(levels['Nivel Experto']);
   portuguesWidth.set(levels['Nivel Avanzado']);
-  inglesWidth.set(levels['Nivel Básico']);
+  inglesWidth.set(levels['Nivel Intermedio']);
   latinWidth.set(levels['Nivel Básico']);
 });
 
@@ -425,18 +646,236 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
   </div>
 </header>
 
-
 <section class="hero-section">
   <div class="hero-content">
-    <h1 class="hero-title">Hola, Soy Steffy!</h1>
+    <div class="social-links">
+      {#each socialLinks as link}
+        <a href={link.url} target="_blank" rel="noopener noreferrer" aria-label={link.name}>
+          <i class="{link.iconClass}"></i>
+        </a>
+      {/each}
+    </div>
+    <h1 class="hero-title">Hola,<br>Soy Steffy!</h1>
     <p class="hero-subtitle">Apasionada por el Diseño Web</p>
     <p class="hero-description">
-      Estudiante de la Universidad Torcuato Di Tella de la carrera profesional de <br> Licenciatura en Tecnología Digital con formación multidisciplinaria.
+      Estudiante de la Universidad Torcuato Di Tella <br> de la carrera profesional de  <br>Licenciatura en Tecnología Digital con formación multidisciplinaria.
       <br><br>
-      Combinando computación, capacidad analítica, visión de negocios, economía, contabilidad, administración y finanzas, e innovación y creatividad visual.
+      Combinando computación, capacidad analítica, visión de negocios, economía, contabilidad, administración y finanzas, e innovación y <br> creatividad visual.
     </p>
-    </div>
-  </section>
+  </div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div
+  class="hero-image-container"
+  bind:this={containerRef}
+  on:mousemove={handleMouseMove}
+  on:mouseenter={handleMouseEnter}
+  on:mouseleave={handleMouseLeave}
+  on:click={handleMouseClick}
+>
+  <img src={coderImage} alt="Stefania Coder B&N" class="hero-image initial-coder" />
+
+  <div class="hero-image-designer-wrapper" style="width: {$swipeProgress * 100}%;">
+    <img src={designerImage} alt="Stefania Diseñadora Color" class="hero-image revealed-designer" />
+  </div>
+  
+<div
+class="hero-image-container"
+bind:this={containerRef}
+>
+<img src={coderImage} alt="Coder B&N" class="hero-image initial-coder" />
+<img src={designerImage} alt="Designer Color" class="hero-image revealed-designer" />
+
+
+<canvas
+  bind:this={canvasRef}
+  class="brush-canvas"
+  on:mousedown={startDrawing}
+  on:mousemove={draw}
+  on:mouseup={stopDrawing}
+  on:mouseleave={stopDrawing}
+  on:touchstart={startDrawing}
+  on:touchmove={draw}
+  on:touchend={stopDrawing}
+></canvas>
+
+<div class="label designer-label" style="opacity: {$swipeProgress > 0.5 ? 1 : 0};">
+  designer
+</div>
+<div class="label coder-label" style="opacity: {$swipeProgress < 0.5 ? 1 : 0};">
+  &lt;coder&gt;
+</div>
+</div>
+
+<button on:click={resetBrush}>Reiniciar</button>
+
+  <div class="label designer-label" style="opacity: {$swipeProgress * 2.5 - 0.5 > 0 ? $swipeProgress * 1.5 - 0.5 : 0};">
+    designer
+  </div>
+
+  <div class="label coder-label" style="opacity: {1 - $swipeProgress * 1.5 > 0 ? 1 - $swipeProgress * 1.5 : 0};">
+    &lt;coder&gt;
+  </div>
+
+  <div class="code-overlay">
+    <span
+      class="code-tag coder-tag cplusplus-tag"
+      style="
+        left: {cplusplusTagBaseX}%; top: {cplusplusTagBaseY}%; /* Posición base en % */
+        transform: translate({cplusplusTagX_dynamic}px, {cplusplusTagY_dynamic}px); /* Movimiento dinámico en px */
+        opacity: {1 - $swipeProgress * 2 > 0 ? 1 - $swipeProgress * 2 : 0};
+        font-size: 1.2em; /* Agrandado un poco */
+      "
+    >
+      C++
+    </span>
+    <span
+      class="code-tag coder-tag python-tag"
+      style="
+        left: {pythonTagBaseX}%; top: {pythonTagBaseY}%;
+        transform: translate({pythonTagX_dynamic}px, {pythonTagY_dynamic}px);
+        opacity: {1 - $swipeProgress * 1.8 > 0 ? 1 - $swipeProgress * 1.8 : 0};
+      "
+    >
+      🐍 Python
+    </span>
+    <span
+      class="code-tag coder-tag assembler-tag"
+      style="
+        left: {assemblerTagBaseX}%; top: {assemblerTagBaseY}%;
+        transform: translate({assemblerTagX_dynamic}px, {assemblerTagY_dynamic}px);
+        opacity: {1 - $swipeProgress * 1.6 > 0 ? 1 - $swipeProgress * 1.6 : 0};
+        font-size: 0.9em;
+      "
+    >
+      ASM
+    </span>
+    <span
+      class="code-tag coder-tag visual-studio-tag"
+      style="
+        left: {visualStudioTagBaseX}%; top: {visualStudioTagBaseY}%;
+        transform: translate({visualStudioTagX_dynamic}px, {visualStudioTagY_dynamic}px);
+        opacity: {1 - $swipeProgress * 1.4 > 0 ? 1 - $swipeProgress * 1.4 : 0};
+        font-size: 1.1em;
+      "
+    >
+      Visual Studio
+    </span>
+    <span
+      class="code-tag coder-tag bin-tag"
+      style="
+        left: {binTagBaseX}%; top: {binTagBaseY}%;
+        transform: translate({binTagX_dynamic}px, {binTagY_dynamic}px);
+        opacity: {1 - $swipeProgress * 1.2 > 0 ? 1 - $swipeProgress * 1.2 : 0};
+        font-size: 0.7em;
+      "
+    >
+      010101
+    </span>
+    <span
+    class="code-tag coder-tag"
+    style="
+      left: {itwhileTagBaseX}%; top: {itwhileTagBaseY}%;
+      transform: translate(-50%, -50%) translate({itwhileTagX_dynamic}px, {itwhileTagY_dynamic}px);
+      opacity: {1 - $swipeProgress * 1.7 > 0 ? 1 - $swipeProgress * 1.7 : 0};
+      font-size: 1em;
+    "
+  >
+    while
+  </span>
+
+    <span
+      class="code-tag designer-tag svelte-tag"
+      style="
+        left: {svelteTagBaseX}%; top: {svelteTagBaseY}%;
+        transform: translate({svelteTagX_dynamic}px, {svelteTagY_dynamic}px);
+        opacity: {$swipeProgress * 2 - 1 > 0 ? $swipeProgress * 2 - 1 : 0};
+        font-size: 1.1em;
+      "
+    >
+      ⚡ Svelte
+    </span>
+    <span
+      class="code-tag designer-tag js-tag"
+      style="
+        left: {jsTagBaseX}%; top: {jsTagBaseY}%;
+        transform: translate({jsTagX_dynamic}px, {jsTagY_dynamic}px);
+        opacity: {$swipeProgress * 1.8 - 0.8 > 0 ? $swipeProgress * 1.8 - 0.8 : 0};
+        font-size: 1.0em;
+      "
+    >
+      JavaScript
+    </span>
+    <span
+      class="code-tag designer-tag figma-tag"
+      style="
+        left: {figmaTagBaseX}%; top: {figmaTagBaseY}%;
+        transform: translate({figmaTagX_dynamic}px, {figmaTagY_dynamic}px);
+        opacity: {$swipeProgress * 1.6 - 0.6 > 0 ? $swipeProgress * 1.6 - 0.6 : 0};
+        font-size: 1.1em; /* Ajustado tamaño Figma */
+      "
+    >
+      Figma
+    </span>
+    <span
+      class="code-tag designer-tag canva-tag"
+      style="
+        left: {canvaTagBaseX}%; top: {canvaTagBaseY}%;
+        transform: translate({canvaTagX_dynamic}px, {canvaTagY_dynamic}px);
+        opacity: {$swipeProgress * 1.4 - 0.4 > 0 ? $swipeProgress * 1.4 - 0.4 : 0};
+        font-size: 1.2em;
+      "
+    >
+      Canva
+    </span>
+    <span
+      class="code-tag designer-tag capcut-tag"
+      style="
+        left: {capcutTagBaseX}%; top: {capcutTagBaseY}%;
+        transform: translate({capcutTagX_dynamic}px, {capcutTagY_dynamic}px);
+        opacity: {$swipeProgress * 1.2 - 0.2 > 0 ? $swipeProgress * 1.2 - 0.2 : 0};
+        font-size: 1.1em;
+      "
+    >
+      CapCut
+    </span>
+     <span
+      class="code-tag designer-tag html-tag"
+      style="
+        left: {htmlTagBaseX}%; top: {htmlTagBaseY}%;
+        transform: translate({htmlTagX_dynamic}px, {htmlTagY_dynamic}px);
+        opacity: {$swipeProgress * 1.1 - 0.1 > 0 ? $swipeProgress * 1.1 - 0.1 : 0};
+        font-size: 1.3em; /* Agrandado HTML */
+      "
+    >
+      &lt;HTML /&gt;
+    </span>
+    <span
+      class="code-tag designer-tag css-tag"
+      style="
+        left: {cssTagBaseX}%; top: {cssTagBaseY}%;
+        transform: translate({cssTagX_dynamic}px, {cssTagY_dynamic}px);
+        opacity: {$swipeProgress * 1.0 - 0.0 > 0 ? $swipeProgress * 1.0 - 0.0 : 0};
+        font-size: 1.2em;
+      "
+    >
+      { CSS }
+    </span>
+    
+    <span
+    class="code-tag designer-tag"
+    style="
+      left: {consoleLogTagBaseX}%; top: {consoleLogTagBaseY}%;
+      transform: translate(-50%, -50%) translate({consoleLogTagX_dynamic}px, {consoleLogTagY_dynamic}px);
+      opacity: {$swipeProgress * 1.7 - 0.7 > 0 ? $swipeProgress * 1.7 - 0.7 : 0};
+      font-size: 1em;
+    "
+  >
+    console.log("Soy Steffy")
+  </span>
+</div>
+</div>
+</section>
     <section class="about-me-section" id="sobre-mi">
       <div class="about-me-content">
         <h2>Sobre Mí</h2>
@@ -453,7 +892,7 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
             </p>
             
             <p>
-              Comprometida, curiosa, detallista, y siempre con ganas de aprender. <br> Porque para mí, lo digital no es solo técnica es emoción, experiencia y conexión.
+              Comprometida, curiosa, detallista, y siempre con ganas de aprender. <br> Para mí, lo digital no es solo técnica es emoción, experiencia y conexión.
             </p>
             <p>
               Mi objetivo es transformar ideas en soluciones digitales estéticamente <br> atractivas e intuitivas,
@@ -478,6 +917,8 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
         </section>        
         <section class="bw-photo-gallery">
           <h2>Mis Fotos en Blanco y Negro</h2>
+          <br>
+          <sub>Diseño Imágenes Geométricas <br> Estos retratos de mi facultad son parte de mi forma de observar.</sub>
           <div class="gallery-grid">
             {#each images as img}
               <div class="photo-card">
@@ -638,26 +1079,32 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
     <div class="steffy-tag">Creado con ♡, código y auriculares puestos 🎧</div>
 
     <div class="projects-grid">
-      {#each projects as project (project.id)}
-        <div class="project-card">
-          <h3>{project.title}</h3>
-          <p class="description">{project.description}</p>
-          <div class="technologies">
-            {#each project.technologies as tech}
-              <span>{tech}</span>
-            {/each}
+      {#each projects as project, i (project.id)}
+        <div 
+          class="project-card"
+          data-aos={i % 2 === 0 ? "fade-right" : "fade-left"}
+        >
+          <div class="project-text">
+            <h3>{project.title}</h3>
+            <p class="description">{project.description}</p>
+            <div class="technologies">
+              {#each project.technologies as tech}
+                <span>{tech}</span>
+              {/each}
+            </div>
+            <a href={project.link} target="_blank" class="project-link">
+              Ver Proyecto
+            </a>
           </div>
-          <a href={project.link} target="_blank" rel="noopener noreferrer" class="project-link">
-            Ver Proyecto
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
-            </svg>
-          </a>
+          <div class="project-image">
+            <img src={project.image} alt={"Imagen de " + project.title} />
+          </div>
         </div>
       {/each}
     </div>
   </div>
 </section>
+
 
 <section class="code-projects-section" id="proyectos-codigo">
   <div class="code-projects-content">
@@ -757,8 +1204,6 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
 <section class="contact-section" id="contacto">
   <div class="contact-content">
     <h2>Contacto</h2>
-    <p class="contact-intro">¡Me encantaría saber de ti! No dudes en enviarme un mensaje.</p>
-
     <div class="contact-grid">
       <div class="contact-form-container">
         <h3>Envíame un mensaje</h3>
@@ -803,6 +1248,68 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
 
 <style>
 
+
+/* Estilos para el subtítulo de la galería de fotos en blanco y negro */
+sub { 
+  color: var(--text-color-secondary); /* Usa la variable de tu tema para el color secundario */
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1em; 
+  text-align: center; 
+  text-transform: none !important; /* Asegura que no se fuerce a minúsculas, usando !important si es necesario */
+  display: block; 
+  top:-10px;
+  margin-bottom: 20px; 
+  line-height: 1.6; 
+  opacity: 0.85; 
+  max-width: 800px; 
+  margin-left: auto;
+  margin-right: auto; 
+  padding: 0 15px; 
+}
+
+  /* Estilos para las redes sociales con Font Awesome */
+  .social-links {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    animation: fadeIn 1s ease-out forwards;
+    animation-delay: 0.2s;
+  }
+
+  .social-links a {
+    color: #EE0001; /* Color de los iconos de Font Awesome */
+    font-size: 2em; /* Tamaño de los iconos */
+    transition: transform 0.2s ease-in-out, color 0.3s ease;
+  }
+
+  .social-links a:hover {
+    transform: translateY(-3px);
+    color: #d10000; /* Color al pasar el mouse */
+  }
+
+/* Si tienes un modo oscuro, asegúrate de que también se vea bien */
+body.dark-mode .bw-photo-gallery sub {
+  color: var(--text-color-secondary); /* El color secundario puede variar en modo oscuro */
+  opacity: 0.7; /* Podrías ajustar la opacidad en modo oscuro si el contraste es muy alto */
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 768px) {
+  .bw-photo-gallery sub {
+    font-size: 1em; /* Ajusta el tamaño de fuente para pantallas más pequeñas */
+    margin-top: 8px;
+    margin-bottom: 15px;
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bw-photo-gallery sub {
+    font-size: 0.9em; /* Más pequeño para móviles muy pequeños */
+    margin-top: 5px;
+    margin-bottom: 10px;
+  }
+}
 
 /* Estilos para la sección de imágenes */
 .school-images {
@@ -1373,132 +1880,313 @@ p.gallery-subtitle {
   }
 
   .hero-section {
-    position: relative;
-    width: 100%;
-    min-height: 100vh; /* Ocupar toda la altura de la ventana */
-    padding: 120px 20px 60px; /* Ajuste para el header fijo y espacio inferior */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    box-sizing: border-box;
-    overflow: hidden; /* Por si añadimos efectos de fondo */
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 80px 20px 40px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #fdfdfe;
+}
 
-    /* Fondo "Aesthetic" - muy sutil */
-    background: #fdfdfe; /* Casi blanco */
-    /* O un gradiente aún más sutil si quieres un toque: */
-    /* background: linear-gradient(145deg, #f0f2f5, #ffffff); */
+
+  .hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1);
+  }
+
+  .hero-image.revealed-designer {
+    filter: none;
+    z-index: 1;
+  }
+
+  .brush-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+.hero-content {
+  max-width: 450px;
+  padding: 30px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  z-index: 1;
+  animation: fadeInSlideUp 1s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.hero-image-container {
+  position: relative;
+  width: 550px;
+  height: 550px;
+  max-width: 85vw;
+  overflow: hidden;
+  cursor: grab;
+  flex-shrink: 0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.hero-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-image.initial-coder {
+  z-index: 2;
+  filter: grayscale(1);
+}
+
+.hero-image-designer-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+  z-index: 3;
+  transition: width 0.3s cubic-out;
+}
+
+.hero-image.revealed-designer {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.label {
+  position: absolute;
+  font-family: 'Poppins', sans-serif;
+  font-size: 3em;
+  font-weight: 700;
+  z-index: 5;
+  transition: opacity 0.3s ease;
+  user-select: none;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.designer-label {
+  top: 20px;
+  left: 20px;
+  color: #ffea06;
+}
+
+.coder-label {
+  top: 20px;
+  right: 20px;
+  color: #faa055;
+}
+
+.code-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.code-tag {
+  position: absolute;
+  font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  transition: transform 0.1s linear, opacity 0.3s ease;
+  user-select: none;
+  /* CAMBIO: Transform-origin para centrar el movimiento en el texto */
+  transform-origin: center center;
+}
+
+.coder-tag {
+  color: rgba(72, 201, 176, 0.8);
+  text-shadow: 0 0 6px rgba(72, 201, 176, 0.6);
+}
+.coder-tag.cplusplus-tag { color: #8caec7; text-shadow: 0 0 6px rgba(0, 89, 156, 0.7);}
+.coder-tag.python-tag { color: #306998; text-shadow: 0 0 6px rgba(48, 105, 152, 0.7); }
+.coder-tag.assembler-tag { color: #FFD700; text-shadow: 0 0 6px rgba(255, 215, 0, 0.7); }
+.coder-tag.visual-studio-tag { color: #8C43AD; text-shadow: 0 0 6px rgba(140, 67, 173, 0.7); }
+.coder-tag.bin-tag { color: #ADFF2F; text-shadow: 0 0 4px rgba(173, 255, 47, 0.7); }
+
+.designer-tag {
+  color: #EE0001;
+  text-shadow: 0 0 6px rgba(238, 0, 1, 0.6);
+}
+.designer-tag.svelte-tag { color: #FF3E00; text-shadow: 0 0 6px rgba(255, 62, 0, 0.7); }
+.designer-tag.js-tag { color: #e457d2; text-shadow: 0 0 6px rgba(255, 215, 0, 0.7); }
+.designer-tag.figma-tag { color: #03ff6c; text-shadow: 0 0 6px rgba(1, 239, 175, 0.7); }
+.designer-tag.canva-tag { color: #00C4CC; text-shadow: 0 0 6px rgba(0, 196, 204, 0.7); }
+.designer-tag.capcut-tag { color: #00CCB4; text-shadow: 0 0 6px rgba(0, 204, 180, 0.7); }
+.designer-tag.html-tag { color: #62ff07; text-shadow: 0 0 6px rgba(92, 163, 234, 0.7); }
+.designer-tag.css-tag { color: #fbff1e; text-shadow: 0 0 6px rgba(122, 173, 224, 0.7); }
+
+.hero-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 3em;
+  font-weight: 800;
+  color: #222;
+  margin-bottom: 15px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.hero-title::after {
+  content: '';
+  display: block;
+  width: 70%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #EE0001, #FF7B00, transparent);
+  margin: 8px 0 0;
+  border-radius: 2px;
+  opacity: 0.7;
+  transform: scaleX(0);
+  animation: expandLine 1.5s ease-out forwards;
+  animation-delay: 0.5s;
+}
+
+.hero-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.4em;
+  font-weight: 600;
+  color: #EE0001;
+  margin-bottom: 25px;
+  margin-left:-10px;
+  animation: fadeIn 1.2s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+.hero-description {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1em;
+  line-height: 1.7;
+  color: #333;
+  max-width: none;
+  margin-left:-18px;
+  margin-right: 10px;
+  animation: fadeIn 1.5s ease-out forwards;
+  animation-delay: 0.6s;
+  text-align: left;
+  hyphens: auto;
+}
+
+/* --- Animaciones --- */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes expandLine {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* --- Media Queries para Responsividad --- */
+@media (max-width: 900px) {
+  .hero-section {
+    flex-direction: column;
+    padding-top: 60px;
+    justify-content: flex-start;
   }
 
   .hero-content {
-    max-width: 900px; /* Mayor ancho para el contenido central */
-    padding: 40px; /* Padding interno para que el contenido no se pegue a los bordes */
-    background-color: rgba(255, 255, 255, 0.8); /* Fondo semitransparente si el principal es un gradiente */
-    border-radius: 25px; /* Bordes más redondeados */
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05); /* Sombra suave */
-    z-index: 1; /* Para asegurar que el contenido esté por encima de cualquier elemento de fondo */
-    animation: fadeInSlideUp 1s ease-out forwards;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    order: 2;
+    padding: 20px;
+    margin: 20px 15px 0;
+    text-align: left;
+    align-items: flex-start;
+    max-width: 90vw;
+  }
+
+  .hero-image-container {
+    order: 1;
+    width: 80vw;
+    height: 80vw;
+    margin-bottom: 20px;
   }
 
   .hero-title {
-    font-family: 'Montserrat', sans-serif;
-    /* Ajuste aquí: Reducimos el tamaño para que sea impactante pero no abrumador */
-    font-size: 3.5em; /* Antes 4.5em */
-    font-weight: 800; /* Extra bold */
-    color: #222; /* Un gris oscuro, menos agresivo que el negro puro */
-    margin-bottom: 20px;
-    line-height: 1.1;
-    letter-spacing: -1px; /* Ajuste sutil de espaciado entre letras */
-    position: relative;
-    display: inline-block; /* Para el efecto de subrayado/línea */
+    font-size: 2.2em;
   }
-
-  /* Un efecto sutil debajo del título, tipo línea suave o un brillo */
-  .hero-title::after {
-    content: '';
-    display: block;
-    width: 80%; /* Ancho de la línea */
-    height: 6px;
-    background: linear-gradient(90deg, transparent, #EE0001, #FF7B00, transparent); /* Gradiente de color */
-    margin: 10px auto 0;
-    border-radius: 3px;
-    opacity: 0.6; /* Sutil */
-    transform: scaleX(0);
-    animation: expandLine 1.5s ease-out forwards;
-    animation-delay: 0.5s;
-  }
-
   .hero-subtitle {
-    font-family: 'Poppins', sans-serif;
-    /* Ajuste aquí: Reducimos el tamaño para armonizar con el título */
-    font-size: 1.6em; /* Antes 2em */
-    font-weight: 600;
-    color: #EE0001; /* Color de acento para destacar */
-    margin-bottom: 35px; /* Buen espacio */
-    animation: fadeIn 1.2s ease-out forwards;
-    animation-delay: 0.3s;
+    font-size: 1.2em;
   }
-
   .hero-description {
-    font-family: 'Poppins', sans-serif;
-    /* Puedes ajustar este tamaño si lo ves necesario, pero 1.15em suele ser bueno */
-    font-size: 1.15em;
-    line-height: 1.9; /* Mayor interlineado para legibilidad */
-    color: black; /* Gris oscuro para el texto */
-    max-width: 750px; /* Ancho máximo para que las líneas no sean demasiado largas */
-    margin: 0 auto;
-    animation: fadeIn 1.5s ease-out forwards;
-    animation-delay: 0.6s;
-    text-align: justify; /* Justificar el texto para una apariencia más formal */
-    hyphens: auto; /* Permite guiones automáticos para mejor justificación */
+    font-size: 0.9em;
+    line-height: 1.6;
   }
 
-  
-  /* Opcional: Estilo para el botón CTA si decides incluirlo */
-  /* .cta-button { ... (Mantener el estilo anterior si te gusta) ... } */
-
-  /* --- Animaciones --- */
-  @keyframes fadeInSlideUp {
-    from {
-      opacity: 0;
-      transform: translateY(40px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .label {
+    font-size: 2.5em;
+    top: 15px;
+    left: 15px;
+    right: 15px;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  .code-tag {
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 600px) {
+  .label {
+    font-size: 2em;
+    top: 10px;
+    left: 10px;
+    right: 10px;
   }
 
-  @keyframes expandLine {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
+  .hero-title {
+    font-size: 2em;
+  }
+  .hero-subtitle {
+    font-size: 1em;
+  }
+  .hero-description {
+    font-size: 0.85em;
   }
 
-  /* --- Media Queries para Responsividad --- */
-  @media (max-width: 900px) {
-    .hero-content {
-      padding: 30px;
-      margin: 0 15px; /* Más margen lateral en pantallas medianas */
-    }
-    .hero-title {
-      font-size: 3em; /* Ajuste para tablets */
-    }
-    .hero-subtitle {
-      font-size: 1.4em; /* Ajuste para tablets */
-    }
-    .hero-description {
-      font-size: 1em;
-      line-height: 1.7;
-    }
+  .code-tag {
+    font-size: 0.7em;
   }
+}
   .about-me-section {
     padding: 80px 20px;
     background-color: #ffffff; /* Fondo claro para la sección */
@@ -1552,6 +2240,8 @@ p.gallery-subtitle {
     color: black;
     margin-bottom: 20px;
   }
+
+  
 
   /* Media Queries para Responsividad */
   @media (max-width: 768px) {
@@ -1950,6 +2640,65 @@ p.gallery-subtitle {
   margin: 0 auto;
 }
 
+.projects-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.project-card {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: #1c1c1e;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 0 20px rgba(255,255,255,0.05);
+  transition: transform 0.3s;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+}
+
+.project-text {
+  flex: 1.5;
+}
+
+.project-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.project-image img {
+  width: 100%;
+  border-radius: 1rem;
+  object-fit: cover;
+ 
+}
+
+.technologies span {
+  display: inline-block;
+  margin: 0.2rem 0.4rem;
+  padding: 0.3rem 0.6rem;
+  background: #292929;
+  color: #fff;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.project-link {
+  margin-top: 1rem;
+  display: inline-block;
+  background: #ff4081;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 1rem;
+  text-decoration: none;
+  font-weight: bold;
+}
+
 /* Título con glow y firma visual */
 h2 {
   font-family: 'Montserrat', sans-serif;
@@ -1972,44 +2721,7 @@ h2::after {
 }
 
 
-/* Grid de proyectos */
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
-  padding: 0 10px;
-}
 
-/* Tarjeta de proyecto con glassmorphism */
-.project-card {
-  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.08));
-  border-radius: 16px;
-  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.12);
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
-  border: 1px solid transparent;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(8px);
-}
-
-.project-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
-  transition: left 0.6s ease;
-}
-
-.project-card:hover::before {
-  left: 100%;
-}
 
 .project-card:hover {
   transform: translateY(-6px);
@@ -2081,7 +2793,7 @@ h2::after {
   align-items: center;
   gap: 10px;
   margin-top: 20px;
-  color: var(--color-project-link); /* Usa la variable */
+  color: black; /* Usa la variable */
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
   font-size: 1.05em;
@@ -2096,17 +2808,9 @@ h2::after {
 }
 
 .project-link:hover {
-  color: #f5850e;
+  color: #76fab1;
 }
 
-.project-link svg {
-  fill: currentColor;
-  transition: transform 0.3s ease;
-}
-
-.project-link:hover svg {
-  transform: translateX(6px) rotate(3deg);
-}
 
 /* Firma visual */
 .steffy-tag {
