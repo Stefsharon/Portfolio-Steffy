@@ -4,6 +4,7 @@
   import { tweened } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
 
+  const cvPath = import.meta.env.BASE_URL + 'images/VictoriaSchenoneCV.pdf';
   let brushPaths = [];
     let isDrawing = false;
     let canvasRef;
@@ -299,16 +300,16 @@ const projects = [
   // --- 1. Datos de Habilidades ---
   let skillsData = [
     { name: "Figma", level: 3, description: "Diseño UI/UX y prototipado, creando experiencias de usuario intuitivas y atractivas. Dominio de componentes y flujos.", icon: "fa-brands fa-figma", source: "UTDT", materia: "Diseño" },
-    { name: "JavaScript", level: 3, description: "Desarrollo frontend interactivo.", icon: "fa-brands fa-js", source: "UTDT Fullstack", materia: "Visualización de Datos" },
-    { name: "Python", level: 3, description: "Análisis de datos y automatización, desde scripts sencillos hasta modelos complejos.", icon: "fa-brands fa-python", source: "UTDT", materia: " Introducción a la programación Tecnología I"},
-    { name: "HTML", level: 5, description: "Estructura de contenido web semántico y accesible, base de cualquier proyecto digital.", icon: "fa-brands fa-html5", source: "UTDT" , materia: "Visualización de Datos"},
+    { name: "JavaScript", level: 2, description: "Desarrollo frontend interactivo.", icon: "fa-brands fa-js", source: "UTDT Fullstack", materia: "Visualización de Datos" },
+    { name: "Python", level: 2, description: "Análisis de datos y automatización, desde scripts sencillos hasta modelos complejos.", icon: "fa-brands fa-python", source: "UTDT", materia: " Introducción a la programación Tecnología I"},
+    { name: "HTML", level: 3, description: "Estructura de contenido web semántico y accesible, base de cualquier proyecto digital.", icon: "fa-brands fa-html5", source: "UTDT" , materia: "Visualización de Datos"},
     { name: "CSS", level: 5, description: "Estilización y diseño responsivo, creando interfaces atractivas y adaptables a cualquier dispositivo.", icon: "fa-brands fa-css3-alt", source: "UTDT", materia: "Visualización de Datos" },
-    { name: "C++", level: 3, description: "Programación de sistemas y algoritmos, con énfasis en eficiencia y rendimiento.", icon: "fa-solid fa-c", source: "UTDT", materia: "Tecnología III" },
+    { name: "C++", level: 2, description: "Programación de sistemas y algoritmos, con énfasis en eficiencia y rendimiento.", icon: "fa-solid fa-c", source: "UTDT", materia: "Tecnología III" },
     { name: "C", level: 2, description: "Fundamentos de programación de bajo nivel y estructuras de datos eficientes.", icon: "fa-solid fa-c", source: "UTDT", materia: "Tecnología II" },
     { name: "Assembler", level: 2, description: "Programación de muy bajo nivel, entendimiento de la arquitectura de computadoras.", icon: "fa-solid fa-microchip", source: "UTDT", materia: "Tecnología II" }, 
     { name: "Logisim", level:1, description: "Diseño y simulación de circuitos lógicos digitales.", icon: "fa-solid fa-microchip", source: "UTDT", materia: "Tecnología II" }, 
-    { name: "Visual Studio", level: 5, description: "Entorno de desarrollo integrado para múltiples lenguajes y plataformas.", icon: "fa-solid fa-code", source: "Autodidacta", materia: "Tecnología II & III" }, 
-    { name: "Microsoft Office", level: 5, description: "Dominio de Word, Excel y PowerPoint para gestión de documentos, datos y presentaciones.", icon: "fa-solid fa-file-excel", source: "Alessandro Manzoni", materia: "Informática" }, 
+    { name: "Visual Studio", level: 4, description: "Entorno de desarrollo integrado para múltiples lenguajes y plataformas.", icon: "fa-solid fa-code", source: "Autodidacta", materia: "Tecnología II & III" }, 
+    { name: "Microsoft Office", level: 3, description: "Dominio de Word, Excel y PowerPoint para gestión de documentos, datos y presentaciones.", icon: "fa-solid fa-file-excel", source: "Alessandro Manzoni", materia: "Informática" }, 
     { name: "Adobe Photoshop", level: 3, description: "Edición de imágenes con filtros y diseño gráfico, para crear recursos visuales impactantes.", icon: "fa-solid fa-image", source: "Autodidacta", materia: "Gustos personales" },
     { name: "Svelte", level: 4, description: "Desarrollo de interfaces reactivas, con un enfoque en la optimización y el rendimiento.", icon: "fa-solid fa-s", source: "UTDT", materia: "Visualización De Datos" },
     { name: "D3.js", level: 3, description: "Visualización de datos avanzada, transformando datos complejos en gráficos interactivos y comprensibles.", icon: "fa-solid fa-chart-simple", source: "UTDT", materia: "Visualización de Datos" },
@@ -861,14 +862,14 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
           </div>
           <div class="about-me-text">
             <p>
-              Soy Victoria Stefania Schenone Fernández, pero me gustan que me digan Steffy. <br> 
+              Soy Victoria Stefania Schenone Fernández, me gustan que me digan Steffy. <br> 
               <br>  
               Mis estudios me ha llevado a combinar mi pasión por el diseño y la creatividad
               con una sólida base en tecnología y análisis de datos.
             </p>
             
             <p>
-              Comprometida, curiosa, detallista, y siempre con ganas de aprender. <br> Para mí, lo digital no es solo técnica es emoción, experiencia y conexión.
+              Comprometida, curiosa, detallista, siempre con ganas de aprender, <br>construir y crear tecnologías. <br>Para mí, lo digital no es solo técnica es emoción, experiencia y conexión. <br> Mi otra forma de expresión es la Fotografía mostrando mi visión única <br>en imágenes a través de la lente de una cámara. <br>Compartiendo mis emociones e historias en momentos creativos experimentando con la luz, la composición y la técnica.
             </p>
             <p>
               Mi objetivo es transformar ideas en soluciones digitales estéticamente <br> atractivas e intuitivas,
@@ -1219,10 +1220,16 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
       <a href="#contacto">Contacto</a>
     </div>
   </div>
+
   <div class="social-icons">
     <a href="https://github.com/Stefsharon" aria-label="GitHub"><i class="fab fa-github"></i></a>
     <a href="https://www.linkedin.com/in/victoria-stefania-schenone-fern%C3%A1ndez-1ab05428b/" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
     <a href="https://www.instagram.com/stefanyred/"aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+  </div>
+    
+  <div class="cv-download">
+    <p>Lee mi resumen:</p>
+    <a href="https://www.canva.com/design/DAGuZOA63jM/lA6OluI38mN8XdCddcxY0A/edit?utm_content=DAGuZOA63jM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" class="cv-button">Ver mi CV</a>
   </div>
 </footer>
 
@@ -3561,9 +3568,56 @@ body.dark-mode .social-icons a:hover {
 }
 
 
+.cv-download {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Espacio entre el texto y el botón */
+}
 
+.cv-download p {
+    font-size: 1em;
+    margin: 0;
+}
 
+.cv-button {
+    background-color: var(--primary-color); /* Color de fondo base, usando tu variable */
+    color: var(--text-color-light); /* Color del texto, usando tu variable */
+    padding: 14px 30px; /* Un poco más de padding para un botón más robusto */
+    border-radius: 50px; /* Redondeado total para un look de "píldora" o ajusta a 8px/10px para esquinas suaves */
+    text-decoration: none;
+    font-weight: 600; /* Un poco más de peso para la fuente */
+    font-size: 1.05em; /* Ligeramente más grande */
+    letter-spacing: 0.05em; /* Espaciado entre letras para un look más estilizado (opcional) */
+    
+    /* Transiciones suaves para todos los efectos */
+    transition: background-color 0.3s ease, 
+                transform 0.2s ease, 
+                box-shadow 0.3s ease,
+                filter 0.3s ease; /* Asegurarse de que el filtro también transicione */
 
+    display: inline-block;
+    cursor: pointer; /* Indicar que es clickeable */
+    outline: none; /* Eliminar el contorno feo al hacer clic */
+    border: none; /* Asegurarse de que no tenga bordes por defecto */
+
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Sombra más suave y extendida por defecto */
+}
+
+.cv-button:hover {
+    background-color: var(--link-hover-color); /* Color más oscuro al pasar el ratón */
+    transform: translateY(-3px); /* Efecto de elevación un poco más pronunciado */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35); /* Sombra más grande y prominente */
+}
+
+/* Estilo cuando el botón es presionado/activo */
+.cv-button:active {
+    background-color: var(--primary-color); /* Vuelve al color base */
+    transform: translateY(1px); /* Efecto de "hundimiento" hacia abajo */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra más pequeña para el efecto de hundido */
+    filter: brightness(90%); /* Oscurece sutilmente el color para enfatizar la presión */
+}
 
 
 
