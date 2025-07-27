@@ -5,220 +5,185 @@
   import { cubicOut } from 'svelte/easing';
 
   let brushPaths = [];
-  let isDrawing = false;
-  let canvasRef;
-  let ctx;
-  let isTouchDevice = false;
+    let isDrawing = false;
+    let canvasRef;
+    let ctx;
+    let isTouchDevice = false;
 
+    // Estado para controlar si el botón 'run photo' ha sido clicado
+    let photoRevealedByButton = false; // TRUE si el botón fue presionado
 
-  function setupCanvas() {
-    if (!canvasRef) return;
-    ctx = canvasRef.getContext('2d');
-    canvasRef.width = canvasRef.clientWidth;
-    canvasRef.height = canvasRef.clientHeight;
-    ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = 'rgba(255,255,255,1)';
-    ctx.lineWidth = 100;
-    ctx.lineCap = 'round';
-  }
-
-  function startDrawing(event) {
-    isDrawing = true;
-    isTouchDevice = event.type.includes('touch');
-    draw(event);
-  }
-
-  function stopDrawing() {
-    isDrawing = false;
-    swipeProgress.set(1); // desbloquea toda la imagen (como si "pintaras" todo)
-  }
-
-  function draw(event) {
-    if (!isDrawing || !ctx) return;
-    const rect = canvasRef.getBoundingClientRect();
-    const x = isTouchDevice ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
-    const y = isTouchDevice ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
-
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, 50, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  function resetBrush() {
-    if (!canvasRef || !ctx) return;
-    ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-    swipeProgress.set(0); // volver al inicio
-  }
-
-  onMount(() => {
-    setupCanvas();
-    window.addEventListener('resize', setupCanvas);
-  });
-  let mouseX = 0;
-  let mouseY = 0;
-  let isMouseOver = false; // Variable para rastrear si el mouse está sobre el contenedor
-  let isLocked = false;    // Nueva variable: true = la imagen se queda como está (no reacciona al mouse)
-
-  const swipeProgress = tweened(0, {
-    duration: 300,
-    easing: cubicOut
-  });
-
-  // Rutas a tus dos imágenes (asegúrate de que estén en public/images/ o la ruta correcta)
-  const coderImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg';    // Tu foto para el estado "Coder" (será B&N)
-  const designerImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg'; // Tu foto para el estado "Designer" (será a Color)
-
-  let containerRef;
-
-  function handleMouseMove(event) {
-    if (containerRef && isMouseOver && !isLocked) { // Solo si el mouse está encima y no está bloqueado
-      const rect = containerRef.getBoundingClientRect();
-      mouseX = (event.clientX - rect.left) / rect.width;
-      mouseY = (event.clientY - rect.top) / rect.height;
-      $swipeProgress.set(mouseX); // Actualiza el progreso según la posición X del mouse
+    function setupCanvas() {
+        if (!canvasRef) return;
+        ctx = canvasRef.getContext('2d');
+        canvasRef.width = canvasRef.clientWidth;
+        canvasRef.height = canvasRef.clientHeight;
+        ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = 'rgba(255,255,255,1)';
+        ctx.lineWidth = 100;
+        ctx.lineCap = 'round';
     }
-  }
 
-  function handleMouseEnter() {
-    isMouseOver = true;
-    // Si el mouse entra y no está bloqueado, asegura que el progreso se actualice.
-    // Esto es importante si el usuario sale y vuelve a entrar sin desbloquear.
-    if (!isLocked) {
-      // Necesitamos una posición inicial para mouseX si el mouse ya está sobre el elemento
-      // pero el evento de mousemove aún no se ha disparado.
-      // Aquí podrías querer capturar el evento clientX/Y del mouseenter
-      // para inicializar mouseX, pero para este efecto, no es crítico.
+    function startDrawing(event) {
+        isDrawing = true;
+        isTouchDevice = event.type.includes('touch');
+        draw(event);
     }
-  }
 
-  function handleMouseLeave() {
-    isMouseOver = false;
-    if (!isLocked) { // Solo si no está bloqueado, vuelve al inicio (B&N)
-      $swipeProgress.set(0);
+    function stopDrawing() {
+        isDrawing = false;
+        // Se elimina la línea que modificaba swipeProgress aquí.
+        // El pincel ahora solo "borra" el área del canvas, no revela la imagen de color.
     }
-  }
 
-  function handleMouseClick() {
-    isLocked = !isLocked; // Alternar el estado de bloqueo
-    if (!isLocked) { // Si se desbloquea, permite que regrese al estado B&N si el mouse no está encima
-      if (!isMouseOver) {
-        $swipeProgress.set(0); // Regresa al inicio si el mouse ya no está encima
-      }
+    function draw(event) {
+        if (!isDrawing) return;
+
+        const rect = canvasRef.getBoundingClientRect();
+        const x = isTouchDevice ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
+        const y = isTouchDevice ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 50, 0, Math.PI * 2);
+        ctx.fill();
     }
-    // Si se bloquea (isLocked = true), el swipeProgress se mantiene en su último valor.
-  }
 
-  // --- Animaciones de las frases ---
-  // Coordenadas base (0-100 para porcentaje relativo dentro del contenedor de la imagen)
-  // Ajustadas para estar más centradas y visibles
-  let cplusplusTagBaseX = 25, cplusplusTagBaseY = 70; // Más arriba
-  let pythonTagBaseX = 60, pythonTagBaseY = 70;    // Python más a la izquierda y abajo
-  let assemblerTagBaseX = 50, assemblerTagBaseY = 20;   // Más a la derecha
-  let visualStudioTagBaseX = 25, visualStudioTagBaseY = 30; // Ajustado
-  let binTagBaseX = 25, binTagBaseY = 15;      // Ajustado
-  let itwhileTagBaseX = 40, itwhileTagBaseY=20;
+    function resetBrush() {
+        if (!canvasRef || !ctx) return;
+        ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+        swipeProgress.set(0); // Vuelve al inicio
+        photoRevealedByButton = false; // Permite que el botón funcione de nuevo
+        showRunPhotoButton = true; // Hace visible el botón
+    }
 
-  let svelteTagBaseX = 60, svelteTagBaseY = 70;    // Ajustado
-  let jsTagBaseX = 13, jsTagBaseY = 34;       // Ajustado
-  let figmaTagBaseX = 75, figmaTagBaseY = 40;    // Ajustado para ser más visible
-  let canvaTagBaseX = 25, canvaTagBaseY = 70;    // Ajustado
-  let capcutTagBaseX = 65, capcutTagBaseY = 65;   // Ajustado
-  let htmlTagBaseX = 15, htmlTagBaseY = 45;     // Mantener
-  let cssTagBaseX = 60, cssTagBaseY = 20;      // Ajustado
-  let consoleLogTagBaseX = 40, consoleLogTagBaseY = 80;
+    onMount(() => {
+        setupCanvas();
+        window.addEventListener('resize', setupCanvas);
+    });
 
-  // Declarar las variables _dynamic (¡esta es la corrección clave del error anterior!)
-  let cplusplusTagX_dynamic, cplusplusTagY_dynamic;
-  let pythonTagX_dynamic, pythonTagY_dynamic;
-  let assemblerTagX_dynamic, assemblerTagY_dynamic;
-  let visualStudioTagX_dynamic, visualStudioTagY_dynamic;
-  let binTagX_dynamic, binTagY_dynamic;
-  let itwhileTagX_dynamic, itwhileTagY_dynamic;
+    let mouseX = 0;
+    let mouseY = 0;
+    let containerRef;
 
-  let svelteTagX_dynamic, svelteTagY_dynamic;
-  let jsTagX_dynamic, jsTagY_dynamic;
-  let figmaTagX_dynamic, figmaTagY_dynamic;
-  let canvaTagX_dynamic, canvaTagY_dynamic;
-  let capcutTagX_dynamic, capcutTagY_dynamic;
-  let htmlTagX_dynamic, htmlTagY_dynamic;
-  let cssTagX_dynamic, cssTagY_dynamic;
-  let consoleLogTagX_dynamic, consoleLogTagY_dynamic;
+    // swipeProgress ahora es controlado EXCLUSIVAMENTE por el botón.
+    // El mouse NO LO MODIFICA para la transición B&N/Color.
+    const swipeProgress = tweened(0, {
+        duration: 300,
+        easing: cubicOut
+    });
 
+    // Visibilidad del botón "run photo()"
+    let showRunPhotoButton = true;
 
-  $: {
-    const movementFactorX = 20; // Movimiento horizontal en px
-    const movementFactorY = 15; // Movimiento vertical en px
+    // Rutas de las imágenes
+    const coderImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg';
+    const designerImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg';
 
-    // Movimiento para CODER tags (más visibles cuando $swipeProgress es bajo)
-    // Se aplican offsets dinámicos basados en mouseX/Y
-    cplusplusTagX_dynamic = cplusplusTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
-    cplusplusTagY_dynamic = cplusplusTagBaseY + mouseY * movementFactorY * 1.5 - (movementFactorY * 1.5 / 2);
+    // *** Lógica clave para el mouse y el botón ***
+    function handleMouseMove(event) {
+        if (containerRef) {
+            const rect = containerRef.getBoundingClientRect();
+            // mouseX y mouseY siempre se actualizan para el movimiento flotante de los tags
+            mouseX = (event.clientX - rect.left) / rect.width;
+            mouseY = (event.clientY - rect.top) / rect.height;
 
-    pythonTagX_dynamic = pythonTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
-    pythonTagY_dynamic = pythonTagBaseY + mouseY * movementFactorY * 1.1 - (movementFactorY * 1.1 / 2);
+            // IMPORTANTE: el mouse NO controla swipeProgress aquí.
+            // swipeProgress solo lo controla el botón 'run photo()'.
+        }
+    }
 
-    assemblerTagX_dynamic = assemblerTagBaseX + mouseX * movementFactorX * 0.5 - (movementFactorX * 0.5 / 2);
-    assemblerTagY_dynamic = assemblerTagBaseY + (1 - mouseY) * movementFactorY * 0.8 - (movementFactorY * 0.8 / 2);
+    // handleMouseEnter y handleMouseLeave ya no necesitan modificar swipeProgress.
+    function handleMouseEnter() {
+        // Nada que hacer aquí para la transición de imagen/tags
+    }
 
-    visualStudioTagX_dynamic = visualStudioTagBaseX + (1 - mouseX) * movementFactorX * 0.9 - (movementFactorX * 0.9 / 2);
-    visualStudioTagY_dynamic = visualStudioTagBaseY + mouseY * movementFactorY * 0.6 - (movementFactorY * 0.6 / 2);
+    function handleMouseLeave() {
+        // Nada que hacer aquí para la transición de imagen/tags
+    }
 
-    binTagX_dynamic = binTagBaseX + mouseX * movementFactorX * 0.6 - (movementFactorX * 0.6 / 2);
-    binTagY_dynamic = binTagBaseY + (1 - mouseY) * movementFactorY * 0.4 - (movementFactorY * 0.4 / 2);
+    // Función que se llama al hacer clic en "run photo()"
+    function toGetUpThings() {
+        photoRevealedByButton = true; // Fija el estado a "revelado por botón"
+        swipeProgress.set(1); // Fuerza el swipeProgress a 1 para mostrar el designer
+        showRunPhotoButton = false; // Oculta el botón
+    }
 
-    
-    itwhileTagX_dynamic = itwhileTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
-    itwhileTagY_dynamic= itwhileTagBaseY + (1 - mouseY) * movementFactorY * 0.4 - (movementFactorY * 0.4 / 2);
+    // --- Animaciones de las frases (mantienen tu lógica original de movimiento) ---
+    let cplusplusTagBaseX = 25, cplusplusTagBaseY = 70;
+    let pythonTagBaseX = 60, pythonTagBaseY = 70;
+    let assemblerTagBaseX = 50, assemblerTagBaseY = 20;
+    let visualStudioTagBaseX = 25, visualStudioTagBaseY = 30;
+    let binTagBaseX = 25, binTagBaseY = 15;
+    let itwhileTagBaseX = 40, itwhileTagBaseY=20;
 
-    // Movimiento para DESIGNER tags (más visibles cuando $swipeProgress es alto)
-    svelteTagX_dynamic = svelteTagBaseX + (1 - mouseX) * movementFactorX * 0.9 - (movementFactorX * 0.9 / 2);
-    svelteTagY_dynamic = svelteTagBaseY + mouseY * movementFactorY * 0.5 - (movementFactorY * 0.5 / 2);
+    let svelteTagBaseX = 60, svelteTagBaseY = 70;
+    let jsTagBaseX = 13, jsTagBaseY = 34;
+    let figmaTagBaseX = 75, figmaTagBaseY = 40;
+    let canvaTagBaseX = 25, canvaTagBaseY = 70;
+    let capcutTagBaseX = 65, capcutTagBaseY = 65;
+    let htmlTagBaseX = 15, htmlTagBaseY = 45;
+    let cssTagBaseX = 60, cssTagBaseY = 20;
+    let consoleLogTagBaseX = 40, consoleLogTagBaseY = 80;
 
-    jsTagX_dynamic = jsTagBaseX + mouseX * movementFactorX * 1.2 - (movementFactorX * 1.2 / 2);
-    jsTagY_dynamic = jsTagBaseY + (1 - mouseY) * movementFactorY * 0.7 - (movementFactorY * 0.7 / 2);
+    let cplusplusTagX_dynamic, cplusplusTagY_dynamic;
+    let pythonTagX_dynamic, pythonTagY_dynamic;
+    let assemblerTagX_dynamic, assemblerTagY_dynamic;
+    let visualStudioTagX_dynamic, visualStudioTagY_dynamic;
+    let binTagX_dynamic, binTagY_dynamic;
+    let itwhileTagX_dynamic, itwhileTagY_dynamic;
 
-    figmaTagX_dynamic = figmaTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
-    figmaTagY_dynamic = figmaTagBaseY + (1 - mouseY) * movementFactorY * 0.9 - (movementFactorY * 0.9 / 2);
+    let svelteTagX_dynamic, svelteTagY_dynamic;
+    let jsTagX_dynamic, jsTagY_dynamic;
+    let figmaTagX_dynamic, figmaTagY_dynamic;
+    let canvaTagX_dynamic, canvaTagY_dynamic;
+    let capcutTagX_dynamic, capcutTagY_dynamic;
+    let htmlTagX_dynamic, htmlTagY_dynamic;
+    let cssTagX_dynamic, cssTagY_dynamic;
+    let consoleLogTagX_dynamic, consoleLogTagY_dynamic;
 
-    canvaTagX_dynamic = canvaTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
-    canvaTagY_dynamic = canvaTagBaseY + (1 - mouseY) * movementFactorY * 0.8 - (movementFactorY * 0.8 / 2);
+    $: {
+        const movementFactorX = 20;
+        const movementFactorY = 15;
 
-    capcutTagX_dynamic = capcutTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
-    capcutTagY_dynamic = capcutTagBaseY + mouseY * movementFactorY * 1.0 - (movementFactorY * 1.0 / 2);
+        // Estos cálculos de posición para el movimiento flotante siguen dependiendo de mouseX/Y
+        cplusplusTagX_dynamic = cplusplusTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+        cplusplusTagY_dynamic = cplusplusTagBaseY + mouseY * movementFactorY * 1.5 - (movementFactorY * 1.5 / 2);
+        pythonTagX_dynamic = pythonTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
+        pythonTagY_dynamic = pythonTagBaseY + mouseY * movementFactorY * 1.1 - (movementFactorY * 1.1 / 2);
+        assemblerTagX_dynamic = assemblerTagBaseX + mouseX * movementFactorX * 0.5 - (movementFactorX * 0.5 / 2);
+        assemblerTagY_dynamic = assemblerTagBaseY + (1 - mouseY) * movementFactorY * 0.8 - (movementFactorY * 0.8 / 2);
+        visualStudioTagX_dynamic = visualStudioTagBaseX + (1 - mouseX) * movementFactorX * 0.9 - (movementFactorX * 0.9 / 2);
+        visualStudioTagY_dynamic = visualStudioTagBaseY + mouseY * movementFactorY * 0.6 - (movementFactorY * 0.6 / 2);
+        binTagX_dynamic = binTagBaseX + mouseX * movementFactorX * 0.6 - (movementFactorX * 0.6 / 2);
+        binTagY_dynamic = binTagBaseY + (1 - mouseY) * movementFactorY * 0.4 - (movementFactorY * 0.4 / 2);
+        itwhileTagX_dynamic = itwhileTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+        itwhileTagY_dynamic= itwhileTagBaseY + (1 - mouseY) * movementFactorY * 0.4 - (movementFactorY * 0.4 / 2);
 
-    htmlTagX_dynamic = htmlTagBaseX + mouseX * movementFactorX - (movementFactorX / 2);
-    htmlTagY_dynamic = htmlTagBaseY + mouseY * movementFactorY - (movementFactorY / 2);
+        svelteTagX_dynamic = svelteTagBaseX + (1 - mouseX) * movementFactorX * 0.9 - (movementFactorX * 0.9 / 2);
+        svelteTagY_dynamic = svelteTagBaseY + mouseY * movementFactorY * 0.5 - (movementFactorY * 0.5 / 2);
+        jsTagX_dynamic = jsTagBaseX + mouseX * movementFactorX * 1.2 - (movementFactorX * 1.2 / 2);
+        jsTagY_dynamic = jsTagBaseY + (1 - mouseY) * movementFactorY * 0.7 - (movementFactorY * 0.7 / 2);
+        figmaTagX_dynamic = figmaTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
+        figmaTagY_dynamic = figmaTagBaseY + (1 - mouseY) * movementFactorY * 0.9 - (movementFactorY * 0.9 / 2);
+        canvaTagX_dynamic = canvaTagBaseX + (1 - mouseX) * movementFactorX * 0.7 - (movementFactorX * 0.7 / 2);
+        canvaTagY_dynamic = canvaTagBaseY + (1 - mouseY) * movementFactorY * 0.8 - (movementFactorY * 0.8 / 2);
+        capcutTagX_dynamic = capcutTagBaseX + mouseX * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+        capcutTagY_dynamic = capcutTagBaseY + mouseY * movementFactorY * 1.0 - (movementFactorY * 1.0 / 2);
+        htmlTagX_dynamic = htmlTagBaseX + mouseX * movementFactorX - (movementFactorX / 2);
+        htmlTagY_dynamic = htmlTagBaseY + mouseY * movementFactorY - (movementFactorY / 2);
+        cssTagX_dynamic = cssTagBaseX + (1 - mouseX) * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
+        cssTagY_dynamic = cssTagBaseY + mouseY * movementFactorY * 1.2 - (movementFactorY * 1.2 / 2);
+        consoleLogTagX_dynamic = consoleLogTagBaseX + (1-mouseX) * movementFactorX * 0.9 - (movementFactorX* 0.10/2);
+        consoleLogTagY_dynamic = consoleLogTagBaseY + mouseY * movementFactorY * 1.4 - (movementFactorY * 4.2/2);
+    }
 
-    cssTagX_dynamic = cssTagBaseX + (1 - mouseX) * movementFactorX * 0.8 - (movementFactorX * 0.8 / 2);
-    cssTagY_dynamic = cssTagBaseY + mouseY * movementFactorY * 1.2 - (movementFactorY * 1.2 / 2);
-    consoleLogTagX_dynamic =  consoleLogTagBaseX + (1-mouseX) * movementFactorX * 0.9 - (movementFactorX* 0.10/2);
-    consoleLogTagY_dynamic = consoleLogTagBaseY + mouseY * movementFactorY * 1.4 - (movementFactorY * 4.2/2);
-  }
-
-    // Links de Redes Sociales con clases de Font Awesome
     const socialLinks = [
-    { name: 'GitHub', url: 'https://github.com/Stefsharon', iconClass: 'fab fa-github' },
-    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/victoria-stefania-schenone-fern%C3%A1ndez-1ab05428b/', iconClass: 'fab fa-linkedin' },
-    { name: 'Instagram', url: 'https://www.instagram.com/stefanyred/', iconClass: 'fab fa-instagram' }
-  ];
-
-
-
-  // Variable de estado principal: true para modo "Designer" (color), false para "Coder" (B&N)
-  let isDesignerMode = false;
-
-    // --- Manejadores de Eventos para la varita ---
-    function handleWandEnter() {
-    isDesignerMode = true;
-  }
-
-  function handleWandLeave() {
-    isDesignerMode = false;
-  }
-
-
+        { name: 'GitHub', url: 'https://github.com/Stefsharon', iconClass: 'fab fa-github' },
+        { name: 'LinkedIn', url: 'https://www.linkedin.com/in/victoria-stefania-schenone-fern%C3%A1ndez-1ab05428b/', iconClass: 'fab fa-linkedin' },
+        { name: 'Instagram', url: 'https://www.instagram.com/stefanyred/', iconClass: 'fab fa-instagram' }
+    ];
 // Datos de tus proyectos
 const projects = [
   {
@@ -485,6 +450,8 @@ const projects = [
     }
   }
 
+
+
   onMount(() => {
     animationFrameId = requestAnimationFrame(animateScroll);
   });
@@ -645,236 +612,239 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
     </button>
   </div>
 </header>
-
 <section class="hero-section">
   <div class="hero-content">
-    <div class="social-links">
-      {#each socialLinks as link}
-        <a href={link.url} target="_blank" rel="noopener noreferrer" aria-label={link.name}>
-          <i class="{link.iconClass}"></i>
-        </a>
-      {/each}
-    </div>
-    <h1 class="hero-title">Hola,<br>Soy Steffy!</h1>
-    <p class="hero-subtitle">Apasionada por el Diseño Web</p>
-    <p class="hero-description">
-      Estudiante de la Universidad Torcuato Di Tella <br> de la carrera profesional de  <br>Licenciatura en Tecnología Digital con formación multidisciplinaria.
-      <br><br>
-      Combinando computación, capacidad analítica, visión de negocios, economía, contabilidad, administración y finanzas, e innovación y <br> creatividad visual.
-    </p>
-  </div>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-  class="hero-image-container"
-  bind:this={containerRef}
-  on:mousemove={handleMouseMove}
-  on:mouseenter={handleMouseEnter}
-  on:mouseleave={handleMouseLeave}
-  on:click={handleMouseClick}
->
-  <img src={coderImage} alt="Stefania Coder B&N" class="hero-image initial-coder" />
-
-  <div class="hero-image-designer-wrapper" style="width: {$swipeProgress * 100}%;">
-    <img src={designerImage} alt="Stefania Diseñadora Color" class="hero-image revealed-designer" />
-  </div>
-  
-<div
-class="hero-image-container"
-bind:this={containerRef}
->
-<img src={coderImage} alt="Coder B&N" class="hero-image initial-coder" />
-<img src={designerImage} alt="Designer Color" class="hero-image revealed-designer" />
-
-
-<canvas
-  bind:this={canvasRef}
-  class="brush-canvas"
-  on:mousedown={startDrawing}
-  on:mousemove={draw}
-  on:mouseup={stopDrawing}
-  on:mouseleave={stopDrawing}
-  on:touchstart={startDrawing}
-  on:touchmove={draw}
-  on:touchend={stopDrawing}
-></canvas>
-
-<div class="label designer-label" style="opacity: {$swipeProgress > 0.5 ? 1 : 0};">
-  designer
-</div>
-<div class="label coder-label" style="opacity: {$swipeProgress < 0.5 ? 1 : 0};">
-  &lt;coder&gt;
-</div>
-</div>
-
-<button on:click={resetBrush}>Reiniciar</button>
-
-  <div class="label designer-label" style="opacity: {$swipeProgress * 2.5 - 0.5 > 0 ? $swipeProgress * 1.5 - 0.5 : 0};">
-    designer
+      <div class="social-links">
+          {#each socialLinks as link}
+              <a href={link.url} target="_blank" rel="noopener noreferrer" aria-label={link.name}>
+                  <i class="{link.iconClass}"></i>
+              </a>
+          {/each}
+      </div>
+      <h1 class="hero-title">Hola,<br>Soy Steffy!</h1>
+      <p class="hero-subtitle">Apasionada por el Diseño Web</p>
+      <p class="hero-description">
+          Estudiante de la Universidad Torcuato Di Tella <br> de la carrera profesional de <br>Licenciatura en Tecnología Digital con formación multidisciplinaria.
+          <br><br>
+          Combinando computación, capacidad analítica, visión de negocios, economía, contabilidad, administración y finanzas, e innovación y <br> creatividad visual.
+      </p>
   </div>
 
-  <div class="label coder-label" style="opacity: {1 - $swipeProgress * 1.5 > 0 ? 1 - $swipeProgress * 1.5 : 0};">
-    &lt;coder&gt;
+  <div class="vs-window">
+      <div class="vs-header">
+          <div class="vs-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+          </div>
+          <span class="filename">SteffyProfile.jsx</span>
+      </div>
+
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+          class="hero-image-container"
+          bind:this={containerRef}
+          on:mousemove={handleMouseMove}
+          on:mouseenter={handleMouseEnter}
+          on:mouseleave={handleMouseLeave}
+      >
+          {#if showRunPhotoButton}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <div class="code-touch-trigger" on:click|stopPropagation={toGetUpThings}>
+                  <span class="code-line">| run photo();</span>
+              </div>
+          {/if}
+
+          <img src={coderImage} alt="Stefania Coder B&N" class="hero-image initial-coder" />
+
+          <div class="hero-image-designer-wrapper" style="width: {$swipeProgress * 100}%;">
+              <img src={designerImage} alt="Stefania Diseñadora Color" class="hero-image revealed-designer" />
+          </div>
+
+          <canvas
+              bind:this={canvasRef}
+              class="brush-canvas"
+              on:mousemove={draw}
+              on:mouseup={stopDrawing}
+              on:mouseleave={stopDrawing}
+              on:touchstart={startDrawing}
+              on:touchmove={draw}
+              on:touchend={stopDrawing}
+          ></canvas>
+
+          <div class="label designer-label" style="opacity: {photoRevealedByButton ? 1 : 0};">
+          future <br> designer
+          </div>
+          <div class="label coder-label" style="opacity: {photoRevealedByButton ? 0 : 1};">
+              &lt;coder&gt;
+          </div>
+
+          <button on:click={resetBrush}>Reiniciar</button>
+
+          <div class="code-overlay">
+              {#if !photoRevealedByButton}
+              <span
+                  class="code-tag coder-tag cplusplus-tag"
+                  style="
+                      left: {cplusplusTagBaseX}%; top: {cplusplusTagBaseY}%;
+                      transform: translate({cplusplusTagX_dynamic}px, {cplusplusTagY_dynamic}px);
+                      opacity: 1; /* Siempre visible si no se ha revelado designer */
+                      font-size: 1.2em;
+                  "
+              >
+                  C++
+              </span>
+              <span
+                  class="code-tag coder-tag python-tag"
+                  style="
+                      left: {pythonTagBaseX}%; top: {pythonTagBaseY}%;
+                      transform: translate({pythonTagX_dynamic}px, {pythonTagY_dynamic}px);
+                      opacity: 1;
+                  "
+              >
+                  🐍 Python
+              </span>
+              <span
+                  class="code-tag coder-tag assembler-tag"
+                  style="
+                      left: {assemblerTagBaseX}%; top: {assemblerTagBaseY}%;
+                      transform: translate({assemblerTagX_dynamic}px, {assemblerTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 0.9em;
+                  "
+              >
+                  ASM
+              </span>
+              <span
+                  class="code-tag coder-tag visual-studio-tag"
+                  style="
+                      left: {visualStudioTagBaseX}%; top: {visualStudioTagBaseY}%;
+                      transform: translate({visualStudioTagX_dynamic}px, {visualStudioTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1.1em;
+                  "
+              >
+                  Visual Studio
+              </span>
+              <span
+                  class="code-tag coder-tag bin-tag"
+                  style="
+                      left: {binTagBaseX}%; top: {binTagBaseY}%;
+                      transform: translate({binTagX_dynamic}px, {binTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 0.7em;
+                  "
+              >
+                  010101
+              </span>
+              <span
+                  class="code-tag coder-tag"
+                  style="
+                      left: {itwhileTagBaseX}%; top: {itwhileTagBaseY}%;
+                      transform: translate(-50%, -50%) translate({itwhileTagX_dynamic}px, {itwhileTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1em;
+                  "
+              >
+                  while
+              </span>
+              {/if}
+
+              {#if photoRevealedByButton}
+              <span
+                  class="code-tag designer-tag svelte-tag"
+                  style="
+                      left: {svelteTagBaseX}%; top: {svelteTagBaseY}%;
+                      transform: translate({svelteTagX_dynamic}px, {svelteTagY_dynamic}px);
+                      opacity: 1; /* Siempre visible si se ha revelado designer */
+                      font-size: 1.1em;
+                  "
+              >
+                  ⚡ Svelte
+              </span>
+              <span
+                  class="code-tag designer-tag js-tag"
+                  style="
+                      left: {jsTagBaseX}%; top: {jsTagBaseY}%;
+                      transform: translate({jsTagX_dynamic}px, {jsTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1.0em;
+                  "
+              >
+                  JavaScript
+              </span>
+              <span
+                  class="code-tag designer-tag figma-tag"
+                  style="
+                      left: {figmaTagBaseX}%; top: {figmaTagBaseY}%;
+                      transform: translate({figmaTagX_dynamic}px, {figmaTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1.1em;
+                  "
+              >
+                  Figma
+              </span>
+              <span
+                  class="code-tag designer-tag canva-tag"
+                  style="
+                      left: {canvaTagBaseX}%; top: {canvaTagBaseY}%;
+                      transform: translate({canvaTagX_dynamic}px, {canvaTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1.2em;
+                  "
+              >
+                  Canva
+              </span>
+              <span
+                  class="code-tag designer-tag capcut-tag"
+                  style="
+                      left: {capcutTagBaseX}%; top: {capcutTagBaseY}%;
+                      transform: translate({capcutTagX_dynamic}px, {capcutTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1.1em;
+                  "
+              >
+                  CapCut
+              </span>
+              <span
+                  class="code-tag designer-tag html-tag"
+                  style="
+                      left: {htmlTagBaseX}%; top: {htmlTagBaseY}%;
+                      transform: translate({htmlTagX_dynamic}px, {htmlTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1.3em;
+                  "
+              >
+                  &lt;HTML /&gt;
+              </span>
+              <span
+                  class="code-tag designer-tag css-tag"
+                  style="
+                      left: {cssTagBaseX}%; top: {cssTagBaseY}%;
+                      transform: translate({cssTagX_dynamic}px, {cssTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1.2em;
+                  "
+              >
+                  { CSS }
+              </span>
+              <span
+                  class="code-tag designer-tag"
+                  style="
+                      left: {consoleLogTagBaseX}%; top: {consoleLogTagBaseY}%;
+                      transform: translate(-50%, -50%) translate({consoleLogTagX_dynamic}px, {consoleLogTagY_dynamic}px);
+                      opacity: 1;
+                      font-size: 1em;
+                  "
+              >
+                  console.log("Soy Steffy")
+              </span>
+              {/if}
+          </div>
+      </div>
   </div>
-
-  <div class="code-overlay">
-    <span
-      class="code-tag coder-tag cplusplus-tag"
-      style="
-        left: {cplusplusTagBaseX}%; top: {cplusplusTagBaseY}%; /* Posición base en % */
-        transform: translate({cplusplusTagX_dynamic}px, {cplusplusTagY_dynamic}px); /* Movimiento dinámico en px */
-        opacity: {1 - $swipeProgress * 2 > 0 ? 1 - $swipeProgress * 2 : 0};
-        font-size: 1.2em; /* Agrandado un poco */
-      "
-    >
-      C++
-    </span>
-    <span
-      class="code-tag coder-tag python-tag"
-      style="
-        left: {pythonTagBaseX}%; top: {pythonTagBaseY}%;
-        transform: translate({pythonTagX_dynamic}px, {pythonTagY_dynamic}px);
-        opacity: {1 - $swipeProgress * 1.8 > 0 ? 1 - $swipeProgress * 1.8 : 0};
-      "
-    >
-      🐍 Python
-    </span>
-    <span
-      class="code-tag coder-tag assembler-tag"
-      style="
-        left: {assemblerTagBaseX}%; top: {assemblerTagBaseY}%;
-        transform: translate({assemblerTagX_dynamic}px, {assemblerTagY_dynamic}px);
-        opacity: {1 - $swipeProgress * 1.6 > 0 ? 1 - $swipeProgress * 1.6 : 0};
-        font-size: 0.9em;
-      "
-    >
-      ASM
-    </span>
-    <span
-      class="code-tag coder-tag visual-studio-tag"
-      style="
-        left: {visualStudioTagBaseX}%; top: {visualStudioTagBaseY}%;
-        transform: translate({visualStudioTagX_dynamic}px, {visualStudioTagY_dynamic}px);
-        opacity: {1 - $swipeProgress * 1.4 > 0 ? 1 - $swipeProgress * 1.4 : 0};
-        font-size: 1.1em;
-      "
-    >
-      Visual Studio
-    </span>
-    <span
-      class="code-tag coder-tag bin-tag"
-      style="
-        left: {binTagBaseX}%; top: {binTagBaseY}%;
-        transform: translate({binTagX_dynamic}px, {binTagY_dynamic}px);
-        opacity: {1 - $swipeProgress * 1.2 > 0 ? 1 - $swipeProgress * 1.2 : 0};
-        font-size: 0.7em;
-      "
-    >
-      010101
-    </span>
-    <span
-    class="code-tag coder-tag"
-    style="
-      left: {itwhileTagBaseX}%; top: {itwhileTagBaseY}%;
-      transform: translate(-50%, -50%) translate({itwhileTagX_dynamic}px, {itwhileTagY_dynamic}px);
-      opacity: {1 - $swipeProgress * 1.7 > 0 ? 1 - $swipeProgress * 1.7 : 0};
-      font-size: 1em;
-    "
-  >
-    while
-  </span>
-
-    <span
-      class="code-tag designer-tag svelte-tag"
-      style="
-        left: {svelteTagBaseX}%; top: {svelteTagBaseY}%;
-        transform: translate({svelteTagX_dynamic}px, {svelteTagY_dynamic}px);
-        opacity: {$swipeProgress * 2 - 1 > 0 ? $swipeProgress * 2 - 1 : 0};
-        font-size: 1.1em;
-      "
-    >
-      ⚡ Svelte
-    </span>
-    <span
-      class="code-tag designer-tag js-tag"
-      style="
-        left: {jsTagBaseX}%; top: {jsTagBaseY}%;
-        transform: translate({jsTagX_dynamic}px, {jsTagY_dynamic}px);
-        opacity: {$swipeProgress * 1.8 - 0.8 > 0 ? $swipeProgress * 1.8 - 0.8 : 0};
-        font-size: 1.0em;
-      "
-    >
-      JavaScript
-    </span>
-    <span
-      class="code-tag designer-tag figma-tag"
-      style="
-        left: {figmaTagBaseX}%; top: {figmaTagBaseY}%;
-        transform: translate({figmaTagX_dynamic}px, {figmaTagY_dynamic}px);
-        opacity: {$swipeProgress * 1.6 - 0.6 > 0 ? $swipeProgress * 1.6 - 0.6 : 0};
-        font-size: 1.1em; /* Ajustado tamaño Figma */
-      "
-    >
-      Figma
-    </span>
-    <span
-      class="code-tag designer-tag canva-tag"
-      style="
-        left: {canvaTagBaseX}%; top: {canvaTagBaseY}%;
-        transform: translate({canvaTagX_dynamic}px, {canvaTagY_dynamic}px);
-        opacity: {$swipeProgress * 1.4 - 0.4 > 0 ? $swipeProgress * 1.4 - 0.4 : 0};
-        font-size: 1.2em;
-      "
-    >
-      Canva
-    </span>
-    <span
-      class="code-tag designer-tag capcut-tag"
-      style="
-        left: {capcutTagBaseX}%; top: {capcutTagBaseY}%;
-        transform: translate({capcutTagX_dynamic}px, {capcutTagY_dynamic}px);
-        opacity: {$swipeProgress * 1.2 - 0.2 > 0 ? $swipeProgress * 1.2 - 0.2 : 0};
-        font-size: 1.1em;
-      "
-    >
-      CapCut
-    </span>
-     <span
-      class="code-tag designer-tag html-tag"
-      style="
-        left: {htmlTagBaseX}%; top: {htmlTagBaseY}%;
-        transform: translate({htmlTagX_dynamic}px, {htmlTagY_dynamic}px);
-        opacity: {$swipeProgress * 1.1 - 0.1 > 0 ? $swipeProgress * 1.1 - 0.1 : 0};
-        font-size: 1.3em; /* Agrandado HTML */
-      "
-    >
-      &lt;HTML /&gt;
-    </span>
-    <span
-      class="code-tag designer-tag css-tag"
-      style="
-        left: {cssTagBaseX}%; top: {cssTagBaseY}%;
-        transform: translate({cssTagX_dynamic}px, {cssTagY_dynamic}px);
-        opacity: {$swipeProgress * 1.0 - 0.0 > 0 ? $swipeProgress * 1.0 - 0.0 : 0};
-        font-size: 1.2em;
-      "
-    >
-      { CSS }
-    </span>
-    
-    <span
-    class="code-tag designer-tag"
-    style="
-      left: {consoleLogTagBaseX}%; top: {consoleLogTagBaseY}%;
-      transform: translate(-50%, -50%) translate({consoleLogTagX_dynamic}px, {consoleLogTagY_dynamic}px);
-      opacity: {$swipeProgress * 1.7 - 0.7 > 0 ? $swipeProgress * 1.7 - 0.7 : 0};
-      font-size: 1em;
-    "
-  >
-    console.log("Soy Steffy")
-  </span>
-</div>
-</div>
 </section>
     <section class="about-me-section" id="sobre-mi">
       <div class="about-me-content">
@@ -918,7 +888,7 @@ bind:this={containerRef}
         <section class="bw-photo-gallery">
           <h2>Mis Fotos en Blanco y Negro</h2>
           <br>
-          <sub>Diseño Imágenes Geométricas <br> Estos retratos de mi facultad son parte de mi forma de observar.</sub>
+          <sub>Diseño Imágenes Geométricas <br> Estos retratos de mi facultad son parte de mi forma de observar. <br> Mi otra pasión la fotografía</sub>
           <div class="gallery-grid">
             {#each images as img}
               <div class="photo-card">
@@ -1140,13 +1110,13 @@ bind:this={containerRef}
 
     <div class="strengths-grid">
       <div class="strength-category">
-        <h3><i class="fas fa-code"></i> Desarrollo y Tecnología Digital</h3>
+        <h3><i class="fas fa-laptop-code"></i> Desarrollo y Tecnología Digital</h3>
         <ul>
           <li>Idear soluciones de Tecnología Digital y aplicaciones móviles.</li>
           <li>Desarrollar plataformas de productos.</li>
           <li>Diseñar algoritmos y sistemas con programación: C, C++, Python y ASSM.</li>
           <li>Trabajar con Visual Studio Code, Oracle Virtual Box y Logisim.</li>
-          <li>Entender las implicancias de los aspectos éticos y legales de las tecnologías.</li>
+          <li>Entender las implicancias de los aspectos éticos y legales <br>de las tecnologías.</li>
         </ul>
       </div>
 
@@ -1154,9 +1124,10 @@ bind:this={containerRef}
         <h3><i class="fas fa-palette"></i> Diseño y Experiencia de Usuario</h3>
         <ul>
           <li>Diseño de interacción, visualización de datos y estética.</li>
-          <li>Dominio de plataformas y programas de edición: Figma, HTML, Java Script, CSS, Adobe Photoshop, CapCut y Canva.</li>
+          <li>Dominio de plataformas <br> y programas de edición: Figma, HTML, Java Script, CSS, Adobe Photoshop, CapCut y Canva.</li>
           <li>Arquitecturas Web.</li>
           <li>Plataformas de redes sociales.</li>
+          <li> Experiencia del Usuario UX/UI</li>
         </ul>
       </div>
 
@@ -1164,6 +1135,9 @@ bind:this={containerRef}
         <h3><i class="fas fa-chart-line"></i> Datos y Análisis</h3>
         <ul>
           <li>Extraer, analizar y utilizar grandes volúmenes de datos para la toma de decisiones con algoritmos de data science.</li>
+          <li>Dominio de Microsoft Office: <br> Word, Excel, PowerPoint.</li>
+          <li> Gestión y análisis de Proyectos tecnológicos. </li>
+          <li> Planificación estrategica, desarrollo optimización e implementación de prototipos funcionales.</li>
         </ul>
       </div>
 
@@ -1180,25 +1154,27 @@ bind:this={containerRef}
       <div class="strength-category">
         <h3><i class="fas fa-handshake"></i> Negocios y Finanzas</h3>
         <ul>
-          <li>Contabilidad: Asientos contables, Impuestos, Balances, Cash Flow, Costos de producción, Cuentas por pagar, Cuentas por cobrar, Compras, Ventas y Sueldos y Jornales.</li>
+          <li> Gestión </li>
+          <li> Economía</li>
+          <li>Contabilidad: <br> Asientos contables, Impuestos, Balances, Cash Flow, Costos de producción, Cuentas por pagar, Cuentas por cobrar, Compras, Ventas, Sueldos y Jornales.</li>
+          <li> Expresión Oral Y Escrita</li>
+          <li> Capacidad creativa e iniciativa para proyectos grupales</li>
         </ul>
       </div>
-
-      <div class="strength-category">
-        <h3><i class="fas fa-users"></i> Habilidades Blandas y Colaboración</h3>
+      <div class = "strength-category">
+        <h3><i class="fas fa-graduation-cap"></i> Mi Ámbito <br> de Estudio</h3>
         <ul>
-          <li>Expresión oral y escrita.</li>
-          <li>Gran capacidad creativa para trabajo independiente o en equipo e iniciativa para proyectos grupales.</li>
-          <li>Adaptación a nuevos desarrollos tecnológicos.</li>
+          <li> UTDT </li>
+          <li> Aprender a Emprender</li>
+          <li> Hacer realidad mis proyectos </li>
+          <li> Profundizar mis conocimientos</li>
+          <li> Disciplinas apasionantes </li>
+          <li> Liderar el Futuro</li>
+          <li> Computer Science</li>
+          <li> Vínculo Tecnología y Negocios</li>
         </ul>
-      </div>
-    </div>
 
-    <p class="study-scope">
-      Mi ámbito de estudio en UTDT, donde aprender a emprender y hacer <br> realidad mis proyectos, profundiza mi
-      conocimiento en las disciplinas <br> que me apasionan para liderar el futuro.
-    </p>
-  </div>
+      </div>
 </section>
 
 <section class="contact-section" id="contacto">
@@ -1247,6 +1223,8 @@ bind:this={containerRef}
 
 
 <style>
+
+
 
 
 /* Estilos para el subtítulo de la galería de fotos en blanco y negro */
@@ -1883,7 +1861,7 @@ p.gallery-subtitle {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  padding: 80px 20px 40px;
+  padding: 80px 4vw;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -1891,8 +1869,100 @@ p.gallery-subtitle {
   box-sizing: border-box;
   overflow: hidden;
   background: #fdfdfe;
+  gap: 5vw;
+}
+.vs-header {
+  background: #1e1e1e;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+
+.vs-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.vs-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.red { background: #ff5f56; }
+.yellow { background: #ffbd2e; }
+.green { background: #27c93f; }
+
+.filename {
+  color: #ccc;
+  font-size: 14px;
+}
+
+.code-touch-trigger {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+  font-family: 'Fira Code', monospace;
+  font-size: 1rem;
+  color: #f0f0f0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.code-touch-trigger:hover {
+  background: rgba(255, 0, 255, 0.1);
+  box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
+}
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+
+.code-line {
+  animation: blink-cursor 1s step-start infinite;
+}
+
+@keyframes blink-cursor {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.vs-window {
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
+  font-family: 'Courier New', monospace;
+  position: relative;
+  max-width: 600px;
+
+}
+
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.red { background-color: #ff605c; }
+.yellow { background-color: #ffbd44; }
+.green { background-color: #00ca4e; }
 
   .hero-image {
     position: absolute;
@@ -1909,6 +1979,8 @@ p.gallery-subtitle {
     z-index: 1;
   }
 
+
+  
   .brush-canvas {
     position: absolute;
     top: 0;
@@ -1920,7 +1992,7 @@ p.gallery-subtitle {
   }
 
 .hero-content {
-  max-width: 450px;
+  max-width: 480px;
   padding: 30px;
   background-color: rgba(255, 255, 255, 0.9);
   border-radius: 20px;
@@ -1930,6 +2002,7 @@ p.gallery-subtitle {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  flex-shrink: 1; 
   text-align: left;
 }
 
@@ -2047,7 +2120,7 @@ p.gallery-subtitle {
 
 .hero-title {
   font-family: 'Montserrat', sans-serif;
-  font-size: 3em;
+  font-size: clamp(2.5em, 5vw, 3.5em);
   font-weight: 800;
   color: #222;
   margin-bottom: 15px;
@@ -2055,6 +2128,8 @@ p.gallery-subtitle {
   letter-spacing: -0.5px;
   position: relative;
   display: inline-block;
+  width: 100%;
+  text-align: left;
 }
 
 .hero-title::after {
@@ -2067,18 +2142,18 @@ p.gallery-subtitle {
   border-radius: 2px;
   opacity: 0.7;
   transform: scaleX(0);
-  animation: expandLine 1.5s ease-out forwards;
-  animation-delay: 0.5s;
+  animation: expandLine 1.8s ease-out forwards;
+  animation-delay: 0.6s;
 }
 
 .hero-subtitle {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.4em;
+  font-size: clamp(1.2em, 2.5vw, 1.6em);
   font-weight: 600;
   color: #EE0001;
   margin-bottom: 25px;
-  margin-left:-10px;
-  animation: fadeIn 1.2s ease-out forwards;
+  margin-left:-5px;
+  animation: fadeIn 1.3s ease-out forwards;
   animation-delay: 0.3s;
 }
 
@@ -2088,7 +2163,7 @@ p.gallery-subtitle {
   line-height: 1.7;
   color: #333;
   max-width: none;
-  margin-left:-18px;
+  margin-left:-8px;
   margin-right: 10px;
   animation: fadeIn 1.5s ease-out forwards;
   animation-delay: 0.6s;
@@ -2352,17 +2427,7 @@ p.gallery-subtitle {
   0% { box-shadow: 0 0 6px #B8C1EC; }
   100% { box-shadow: 0 0 10px #6C63FF; }
 }
-  .study-scope {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.1em;
-    color: var(--text-secondary);
-    line-height: 1.8;
-    margin-top: 60px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-
-  }
+ 
 /* Mantener estilos generales de la sección */
 .education-section {
     scroll-behavior: smooth;
