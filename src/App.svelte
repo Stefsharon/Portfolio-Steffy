@@ -328,14 +328,14 @@ const projects = [
   let selectedSkill = null;
   
 
-  let images = [
-    "/vd-d3-escalas/images/blanco%20y%20negro/foto%20(1).jpg",
-    "/vd-d3-escalas/images/blanco%20y%20negro/foto%20(2).jpg",
-    "/vd-d3-escalas/images/blanco%20y%20negro/foto%20(3).jpg",
-    "/vd-d3-escalas/images/blanco%20y%20negro/foto%20(4).jpg",
-    "/vd-d3-escalas/images/blanco%20y%20negro/foto%20(5).jpg",
-    "/vd-d3-escalas/images/blanco%20y%20negro/foto%20(6).jpg",
-  ];
+  const images = [
+  import.meta.env.BASE_URL + "images/blanco%20y%20negro/foto%20(1).jpg",
+  import.meta.env.BASE_URL + "images/blanco%20y%20negro/foto%20(2).jpg",
+  import.meta.env.BASE_URL + "images/blanco%20y%20negro/foto%20(3).jpg",
+  import.meta.env.BASE_URL + "images/blanco%20y%20negro/foto%20(4).jpg",
+  import.meta.env.BASE_URL + "images/blanco%20y%20negro/foto%20(5).jpg",
+  import.meta.env.BASE_URL + "images/blanco%20y%20negro/foto%20(6).jpg"
+];
 
  // NUEVO: Variable para controlar si el scroll manual está en progreso
  let isManualScrolling = false;
@@ -459,11 +459,12 @@ const projects = [
   onDestroy(() => {
     cancelAnimationFrame(animationFrameId);
   });
- // Generar automáticamente las 15 rutas
- let personalImages = [];
-  for (let i =  1; i <= 6; i++) {
-    personalImages.push(`/vd-d3-escalas/images/mis%20fotitos/foto%20(${i}).jpg`);
-  }
+
+  const personalImages = [];
+for (let i = 1; i <= 6; i++) {
+  personalImages.push(import.meta.env.BASE_URL + `images/mis%20fotitos/foto%20(${i}).jpg`);
+}
+
 
    // Datos para la línea de tiempo
    const educationEvents = [
@@ -680,8 +681,6 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
           <div class="label coder-label" style="opacity: {photoRevealedByButton ? 0 : 1};">
               &lt;coder&gt;
           </div>
-
-          <button on:click={resetBrush}>Reiniciar</button>
 
           <div class="code-overlay">
               {#if !photoRevealedByButton}
