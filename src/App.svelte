@@ -77,9 +77,9 @@
     // Visibilidad del botón "run photo()"
     let showRunPhotoButton = true;
 
-    // Rutas de las imágenes
-    const coderImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg';
-    const designerImage = '/vd-d3-escalas/images/portadapic/coderdesigner.jpg';
+    const coderImage = import.meta.env.BASE_URL + 'images/portadapic/coderdesigner.jpg';
+const designerImage = import.meta.env.BASE_URL + 'images/portadapic/coderdesigner.jpg';
+
 
     // *** Lógica clave para el mouse y el botón ***
     function handleMouseMove(event) {
