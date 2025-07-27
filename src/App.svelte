@@ -80,6 +80,13 @@
     const coderImage = import.meta.env.BASE_URL + 'images/portadapic/coderdesigner.jpg';
 const designerImage = import.meta.env.BASE_URL + 'images/portadapic/coderdesigner.jpg';
 
+const preloadImg = (src) => {
+  const img = new Image();
+  img.src = src;
+};
+
+preloadImg(coderImage);
+preloadImg(designerImage);
 
     // *** Lógica clave para el mouse y el botón ***
     function handleMouseMove(event) {
@@ -598,16 +605,9 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
 
 <head>
   <!-- Precarga de imágenes clave -->
-  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/coderdesigner.jpg">
-  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/heroimage.png">
-  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/mondrian.png">
+  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/coderdesigner.jpg" />
+  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/designer.jpg" />
   
-  <!-- Preload de tipografía si usás Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=TuFuenteElegida&display=swap" rel="stylesheet">
-
-  <!-- El resto del head -->
 </head>
 
 
