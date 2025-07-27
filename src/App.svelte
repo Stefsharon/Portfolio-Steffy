@@ -580,8 +580,6 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       isDarkMode = savedTheme === 'dark';
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      isDarkMode = true; // Si el sistema prefiere oscuro y no hay nada guardado
     }
     applyTheme(); // Aplicar el tema inicial
     animationFrameId = requestAnimationFrame(animateScroll);
