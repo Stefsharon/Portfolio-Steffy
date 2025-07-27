@@ -582,17 +582,33 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
       isDarkMode = savedTheme === 'dark';
     }
     applyTheme(); // Aplicar el tema inicial
-    animationFrameId = requestAnimationFrame(animateScroll);
+  s
   });
 
   onDestroy(() => {
     cancelAnimationFrame(animationFrameId);
   });
 
+  window.addEventListener('load', () => {
+  document.body.classList.remove('preload');
+});
 
  
 </script>
 
+<head>
+  <!-- Precarga de imágenes clave -->
+  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/coderdesigner.jpg">
+  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/heroimage.png">
+  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/mondrian.png">
+  
+  <!-- Preload de tipografía si usás Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=TuFuenteElegida&display=swap" rel="stylesheet">
+
+  <!-- El resto del head -->
+</head>
 
 
 <header class="main-header">
