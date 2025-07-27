@@ -603,14 +603,6 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
  
 </script>
 
-<head>
-  <!-- Precarga de imágenes clave -->
-  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/coderdesigner.jpg" />
-  <link rel="preload" as="image" href="/vd-d3-escalas/images/portadapic/designer.jpg" />
-  
-</head>
-
-
 <header class="main-header">
   <div class="header-content">
     <a href="/" class="header-logo">VS</a>
