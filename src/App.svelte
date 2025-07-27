@@ -851,7 +851,8 @@ let isDarkMode =  false; // la inicializo false porque la página empieza siendo
         <h2>Sobre Mí</h2>
         <div class="about-me-details">
           <div class="about-me-image">
-            <img src="/vd-d3-escalas/images/aboutme.png" alt="Victoria Steffy Schenone">
+            <img src={import.meta.env.BASE_URL + 'images/aboutme.png'} alt="Victoria Steffy Schenone">
+
           </div>
           <div class="about-me-text">
             <p>
