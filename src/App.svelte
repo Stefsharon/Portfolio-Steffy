@@ -212,14 +212,14 @@ const projects = [
     image: 'images/proyectos/ReproductoresMusicales2.png',
     type: 'data-viz'
   },
-  {
-    id: 3,
-    title: 'Galaxia Estelar de Profesores',
-    description: 'Visualización de datos con mis profesores preferidos de la universidad, donde cada estrella crece en tamaño según cuánto valoré su forma de enseñar y están ordenadas de mayor a menor puntaje para destacar a los mejores. Cada color representa el mood único del profesor, reflejando su estilo y energía al explicar. Al final de la página, los profesores están representados por muñecos diseñados por mí; al hacer click, se muestra información personal y una frase que los define. Un proyecto que une datos y diseño para destacar la esencia única de cada docente. ',
-    technologies: ["HTML",'Svelte', 'JavaScript', 'CSS', 'D3.js', "Vercel"],
-    link: 'https://galaxia-estelar-visual.vercel.app/',
-    image: 'images/proyectos/GalaxiaEstelar3.png',
-    type: 'data-viz'
+  {id:6,
+    title: 'Starboy La Ciudad De La Furia',
+    description: `Prototipo para la materia optativa "Industria y Desarrollo de Videojuegos"
+Es un juego de de acción, ambientado en Buenos Aires futurista devastada por un apagón sobrenatural. El jugador Starboy, debe derrotar a las criaturas mitológicas de la Horda de la Furia y rescatar a su compañero, Andrómaco, del colosal líder de la oscuridad, Typhon.`,
+
+    technologies: ["Unity", "C#", "Visual Studio"],
+    link: 'https://starboy30.itch.io/starboy-la-ciudad-de-la-furia', 
+    image: 'images/starboy.png',
   },
   {
     id: 4,
@@ -239,13 +239,15 @@ const projects = [
     image: 'images/proyectos/MyCareer5.png',
     type: 'ui-ux'
   },
-  {id:6,
-    title: 'Studify para estudiantes universitarios',
-    description: 'Plataforma web creada en equipo para la materia Gestión de Proyectos Digitales, diseñada para potenciar el aprendizaje. Ofrece clases particulares con profesores especializados, comunidades organizadas por carrera y ejercicios desglosados paso a paso para facilitar la comprensión. Además, incorpora funciones inteligentes como un sistema de “match” entre estudiantes, técnica Pomodoro para optimizar el tiempo de estudio y recordatorios personalizados de exámenes. Este proyecto abarcó desde la planificación inicial hasta la creación de un prototipo funcional, reflejando un proceso completo de desarrollo.',
-    technologies: ["HTML", "React", "CSS", "Netlify", "Figma", "Google Drive"],
-    link: 'https://studify-gestion.netlify.app/', 
-    image: 'images/proyectos/Studify6.png',
-  }
+  {
+    id: 3,
+    title: 'Galaxia Estelar de Profesores',
+    description: 'Visualización de datos con mis profesores preferidos de la universidad, donde cada estrella crece en tamaño según cuánto valoré su forma de enseñar y están ordenadas de mayor a menor puntaje para destacar a los mejores. Cada color representa el mood único del profesor, reflejando su estilo y energía al explicar. Al final de la página, los profesores están representados por muñecos diseñados por mí; al hacer click, se muestra información personal y una frase que los define. Un proyecto que une datos y diseño para destacar la esencia única de cada docente. ',
+    technologies: ["HTML",'Svelte', 'JavaScript', 'CSS', 'D3.js', "Vercel"],
+    link: 'https://galaxia-estelar-visual.vercel.app/',
+    image: 'images/proyectos/GalaxiaEstelar3.png',
+    type: 'data-viz'
+  },
   ];
 
 

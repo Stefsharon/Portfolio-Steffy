@@ -38,6 +38,9 @@
       /* NUEVA VARIABLE para el glow de iconos en modo CLARO */
       --clr-social-glow-light: rgba(108, 99, 255, 0.4); /* Un tono más suave de tu violeta principal */
   }
+  .project-text p {
+    white-space: pre-line;
+  }
   
   body.dark-mode {
     /* Modo Oscuro */
